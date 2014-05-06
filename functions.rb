@@ -68,13 +68,13 @@ def tv(n, source)
     end
 
     if tvstatus == 'Ended' or tvstatus == 'Canceled/Ended'
-      Channel($channel).send "#{Format(:bold, "#{source.upcase} - Show:")} #{tvname} :: #{Format(:bold, 'Status:')} #{tvstatus} :: URL: #{url.shorten!}"
+      n.reply "#{Format(:bold, "#{source.upcase} - Show:")} #{tvname} :: #{Format(:bold, 'Status:')} #{tvstatus} :: URL: #{url.shorten!}"
     else
-      Channel($channel).send "#{Format(:bold, "#{source.upcase} - Show:")} #{tvname} :: #{Format(:bold, 'Status:')} #{tvstatus} :: #{Format(:bold, 'Next:')} #{nexta(show, source)} :: URL: #{url.shorten!}"
+      n.reply "#{Format(:bold, "#{source.upcase} - Show:")} #{tvname} :: #{Format(:bold, 'Status:')} #{tvstatus} :: #{Format(:bold, 'Next:')} #{nexta(show, source)} :: URL: #{url.shorten!}"
     end
   end
   if search.css(s[:id]).first.nil?
-    Channel($channel).send "#{Format(:bold, source.upcase)} - No results found."
+    n.reply "#{Format(:bold, source.upcase)} - No results found."
   end
 end
 
@@ -101,28 +101,28 @@ def movie(n)
     end
   end
 
-  Channel($channel).send "#{Format(:bold, 'MOVIE:')} #{title} :: #{Format(:bold, 'Ratings:')} ( IMDB:#{rating}) ( RT: #{rrating} ) :: #{Format(:bold, 'Released:')} Theaters: #{released} - DVD: #{dvd} :: #{Format(:bold, 'URL:')} #{url.shorten!}"
+  n.reply "#{Format(:bold, 'MOVIE:')} #{title} :: #{Format(:bold, 'Ratings:')} ( IMDB:#{rating}) ( RT: #{rrating} ) :: #{Format(:bold, 'Released:')} Theaters: #{released} - DVD: #{dvd} :: #{Format(:bold, 'URL:')} #{url.shorten!}"
 end
 
-def issues
+def issues(n)
   url = Google::UrlShortener::Url.new(:long_url => "https://github.com/#{$ghuser}/#{$ghrepo}/issues")
   Octokit.auto_paginate = true
-  Channel($channel).send "ISSUES - #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}").count} open. :: #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :since => (Time.new - 86400).strftime('%Y-%m-%dT%H:%M:%SZ')).count} open from the last 24H. :: #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :labels => 'verify').count} need verification. URL: #{url.shorten!}"
+  n.reply "ISSUES - #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}").count} open. :: #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :since => (Time.new - 86400).strftime('%Y-%m-%dT%H:%M:%SZ')).count} open from the last 24H. :: #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :labels => 'verify').count} need verification. URL: #{url.shorten!}"
 end
 
 def trakt(u)
-  url = "http://api.trakt.tv/user/profile.json/#{$traktapikey}/#{u.message.split(' ', 2)[1]}"
+  url = "http://api.trakt.tv/user/profile.json/#{$traktapikey}/#{CGI.escape(u.message.split(' ')[1])}"
   json = JSON.load(open(url))
 
   if json['status'] == 'error' && json['message'] == 'This user has a protected profile.'
-    Channel($channel).send "TRAKT - #{u.message.split(' ', 2)[1]} is a protected profile."
-  elsif json['status'] == 'failure' && json['error'] == 'bad user'
-    Channel($channel).send "TRAKT - #{u.message.split(' ', 2)[1]} does not exist."
+    u.reply "TRAKT - #{u.message.split(' ', 2)[1]} is a protected profile."
   else
     username = json['username']
     shows = json['stats']['shows']['watched']
     episodes = json['stats']['episodes']['watched']
     movies = json['stats']['movies']['watched']
-    Channel($channel).send "TRAKT - #{username} has watched #{movies} movies and #{shows} tv shows consisting of #{episodes} episodes."
+    u.reply "TRAKT - #{username} has watched #{movies} movies and #{shows} tv shows consisting of #{episodes} episodes."
   end
+  rescue OpenURI::HTTPError => ex
+    u.reply "TRAKT - #{u.message.split(' ', 2)[1]} does not exist."
 end

@@ -18,28 +18,20 @@ cinch = Cinch::Bot.new do
   end
 
   on :message, /^!tvdb (.+)/i do |m|
-    if m.channel == $channel
       tv(m, 'tvdb')
-    end
   end
 
   on :message, /^!tvrage (.+)/i do |m|
-    if m.channel == $channel
       tv(m, 'tvrage')
-    end
   end
 
   on :message, /^!tv (.+)/i do |m|
-    if m.channel == $channel
       tv(m, 'tvdb')
       tv(m, 'tvrage')
-    end
   end
 
   on :message, /^!issues/i do |m|
-    if m.channel == $channel
-      issues
-    end
+      issues(m)
   end
 
   on :message, /^!list/i do |m|
@@ -51,15 +43,11 @@ cinch = Cinch::Bot.new do
   end
 
   on :message, /^!movie/i do |m|
-    if m.channel == $channel
       movie(m)
-    end
   end
 
   on :message, /^!trakt/i do |m|
-    if m.channel == $channel
       trakt(m)
-    end
   end
 end
 
