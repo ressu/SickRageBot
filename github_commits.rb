@@ -70,21 +70,21 @@ class Cinch::GithubCommits
         title = info['issue']['title']
         url = Google::UrlShortener::Url.new(:long_url => info['issue']['html_url'])
 
-        bot.channels.each{|c| c.send("[ISSUE] #{user} opened a new issue: \"#{title}\" URL: #{url.shorten!}")}
+        bot.channels.each{|c| c.send("[ISSUE][##{info['issue']['number']}] #{user} opened a new issue: \"#{title}\" URL: #{url.shorten!}")}
       end
       if info['action'] == 'closed'
         user = info['sender']['login']
         title = info['issue']['title']
         url = Google::UrlShortener::Url.new(:long_url => info['issue']['html_url'])
 
-        bot.channels.each{|c| c.send("[ISSUE] #{user} closed issue: \"#{title}\" URL: #{url.shorten!}")}
+        bot.channels.each{|c| c.send("[ISSUE][##{info['issue']['number']}] #{user} closed issue: \"#{title}\" URL: #{url.shorten!}")}
       end
       if info['action'] == 'reopened'
         user = info['sender']['login']
         title = info['issue']['title']
         url = Google::UrlShortener::Url.new(:long_url => info['issue']['html_url'])
 
-        bot.channels.each{|c| c.send("[ISSUE] #{user} reopened an issue: \"#{title}\" URL: #{url.shorten!}")}
+        bot.channels.each{|c| c.send("[ISSUE][##{info['issue']['number']}] #{user} reopened an issue: \"#{title}\" URL: #{url.shorten!}")}
       end
     end
 
