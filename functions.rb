@@ -118,5 +118,11 @@ def trakt(u)
   episodes = json['stats']['episodes']['watched']
   movies = json['stats']['movies']['watched']
 
-  Channel($channel).send "TRAKT - #{username} has watched #{movies} movies and #{shows} tv shows consisting of #{episodes} episodes."
+  if json['status'] == 'error' && json['message'] == 'This user has a protected profile.'
+    Channel($channel).send "TRAKT - #{u.message.split(' ', 2)[1]} is a protected profile."
+  elsif json['status'] == 'failure' && json['error'] == 'bad user'
+    Channel($channel).send "TRAKT - #{u.message.split(' ', 2)[1]} does not exist."
+  else
+    Channel($channel).send "TRAKT - #{username} has watched #{movies} movies and #{shows} tv shows consisting of #{episodes} episodes."
+  end
 end
