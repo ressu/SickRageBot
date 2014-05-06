@@ -1,0 +1,8 @@
+$channel = '#channel'
+$server = 'irc.server.net'
+$nick = 'Nick'
+$tvdbapikey = 'tvdbapi'
+$googleapikey = 'googleapi'
+$rtapikey = 'rottentomatoesapi'
+$ghuser = 'ghuser'
+$ghrepo = 'ghrepo'
