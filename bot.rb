@@ -55,6 +55,12 @@ cinch = Cinch::Bot.new do
       movie(m)
     end
   end
+
+  on :message, /^!trakt/i do |m|
+    if m.channel == $channel
+      trakt(m)
+    end
+  end
 end
 
 cinch.start

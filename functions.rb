@@ -109,3 +109,14 @@ def issues
   Octokit.auto_paginate = true
   Channel($channel).send "ISSUES - #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}").count} open. :: #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :since => (Time.new - 86400).strftime('%Y-%m-%dT%H:%M:%SZ')).count} open from the last 24H. :: #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :labels => 'verify').count} need verification. URL: #{url.shorten!}"
 end
+
+def trakt(u)
+  url = "http://api.trakt.tv/user/profile.json/#{$traktapikey}/#{u.message.split(' ', 2)[1]}"
+  json = JSON.load(open(url))
+  username = json['username']
+  shows = json['stats']['shows']['watched']
+  episodes = json['stats']['episodes']['watched']
+  movies = json['stats']['movies']['watched']
+
+  Channel($channel).send "TRAKT - #{username} has watched #{movies} movies and #{shows} tv shows consisting of #{episodes} episodes."
+end
