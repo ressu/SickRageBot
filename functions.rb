@@ -107,7 +107,7 @@ end
 def issues(n)
   url = Google::UrlShortener::Url.new(:long_url => "https://github.com/#{$ghuser}/#{$ghrepo}/issues")
   Octokit.auto_paginate = true
-  n.reply "ISSUES - #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}").count} open. :: #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :since => (Time.new - 86400).strftime('%Y-%m-%dT%H:%M:%SZ')).count} open from the last 24H. :: #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :labels => 'verify').count} need verification. URL: #{url.shorten!}"
+  n.reply "ISSUES - #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}").count} open. :: #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :since => (Time.new - 86400).strftime('%Y-%m-%dT%H:%M:%SZ')).count} open from the last 24H. :: #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :labels => 'enhancement').count} enhancements. :: #{Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :labels => 'verify').count} need verification. URL: #{url.shorten!}"
 end
 
 def trakt(u)

@@ -40,6 +40,7 @@ cinch = Cinch::Bot.new do
     User(m.user.nick).send('!tv <name of show>: Searches both TVDB and TVRAGE for specified show. Eg. !tv the simpsons')
     User(m.user.nick).send('!movie <name of movie>: Searches IMDB and RT for a specified movie. Eg. !movie spiderman')
     User(m.user.nick).send('!issues: Reports amount of open issues and unverified bugs.')
+    User(m.user.nick).send('!trakt <user>: Returns watched stats for the inputted user. Eg. !trakt senseye')
   end
 
   on :message, /^!movie/i do |m|
