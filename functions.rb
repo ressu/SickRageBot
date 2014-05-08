@@ -112,7 +112,7 @@ def issues(n)
   enhancements = Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :labels => 'enhancement').count
   verify = Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :labels => 'verify').count
 
-  n.reply "ISSUES - #{total} open. :: #{today} open from the last 24H. :: #{enhancements} enhancements. :: #{verify} fixed, waiting for verification. URL: #{url.shorten!}"
+  n.reply "ISSUES - #{total} open. :: #{today} open from the last 24H. :: #{enhancements} enhancements. :: #{verify} fixed, waiting for verification. :: #{total - enhancements - verify} other. :: URL: #{url.shorten!}"
 end
 
 def trakt(u)
