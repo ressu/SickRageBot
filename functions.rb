@@ -1,7 +1,6 @@
 require 'nokogiri'
 require 'open-uri'
 require 'cgi'
-require 'octokit'
 require 'google_url_shortener'
 require 'certified'
 require 'json'
@@ -105,14 +104,11 @@ def movie(n)
 end
 
 def issues(n)
-  url = Google::UrlShortener::Url.new(:long_url => "https://github.com/#{$ghuser}/#{$ghrepo}/issues")
-  Octokit.auto_paginate = true
-  total = Octokit.list_issues("#{$ghuser}/#{$ghrepo}").count
-  today = Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :since => (Time.new - 86400).strftime('%Y-%m-%dT%H:%M:%SZ')).count
-  enhancements = Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :labels => 'enhancement').count
-  verify = Octokit.list_issues("#{$ghuser}/#{$ghrepo}", :labels => 'verify').count
+  url = 'http://sickrage.tv/forums/forum'
+  enhancements = Nokogiri::XML(open(url)).css('td.topics-count')[1].text
+  issues = Nokogiri::XML(open(url)).css('td.topics-count')[4].text
 
-  n.reply "ISSUES - #{total} open. :: #{today} open from the last 24H. :: #{enhancements} enhancements. :: #{verify} fixed, waiting for verification. :: #{total - enhancements - verify} other. :: URL: #{url.shorten!}"
+  n.reply "ISSUES - #{issues} issues. :: #{enhancements} feature requests. :: URL: #{Google::UrlShortener::Url.new(:long_url => url).shorten!}"
 end
 
 def trakt(u)
