@@ -2,10 +2,11 @@ require 'nokogiri'
 require 'open-uri'
 require 'cgi'
 require 'google_url_shortener'
-require 'certified'
 require 'json'
+require 'openssl'
 require_relative 'settings'
 
+OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 Google::UrlShortener::Base.api_key = $googleapikey
 
 def nexta(xml, source)
@@ -104,7 +105,7 @@ def movie(n)
 end
 
 def issues(n)
-  url = 'http://sickrage.tv/forums/forum'
+  url = 'https://sickrage.tv/forums/forum'
   enhancements = Nokogiri::XML(open(url)).css('td.topics-count')[1].text
   issues = Nokogiri::XML(open(url)).css('td.topics-count')[4].text
 
