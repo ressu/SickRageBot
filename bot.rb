@@ -18,20 +18,20 @@ cinch = Cinch::Bot.new do
   end
 
   on :message, /^!tvdb (.+)/i do |m|
-      tv(m, 'tvdb')
+    tv(m, 'tvdb')
   end
 
   on :message, /^!tvrage (.+)/i do |m|
-      tv(m, 'tvrage')
+    tv(m, 'tvrage')
   end
 
   on :message, /^!tv (.+)/i do |m|
-      tv(m, 'tvdb')
-      tv(m, 'tvrage')
+    tv(m, 'tvdb')
+    tv(m, 'tvrage')
   end
 
   on :message, /^!issues/i do |m|
-      issues(m)
+    issues(m)
   end
 
   on :message, /^!list/i do |m|
@@ -44,11 +44,15 @@ cinch = Cinch::Bot.new do
   end
 
   on :message, /^!movie/i do |m|
-      movie(m)
+    movie(m)
   end
 
   on :message, /^!trakt/i do |m|
-      trakt(m)
+    trakt(m)
+  end
+
+  on :message, /(.+)ACTION slaps #{$nick}(.+)/i do |m|
+    m.action_reply "slaps #{m.user.nick} around a bit with a large trout"
   end
 end
 
