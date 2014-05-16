@@ -7,3 +7,4 @@ $rtapikey = 'rottentomatoesapi'
 $traktapikey = 'traktapi'
 $ghuser = 'ghuser'
 $ghrepo = 'ghrepo'
+$ops = ['op']

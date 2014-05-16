@@ -128,3 +128,33 @@ def trakt(u)
   rescue OpenURI::HTTPError => ex
     u.reply "TRAKT - #{u.message.split(' ', 2)[1]} does not exist."
 end
+
+def mode(u)
+  if u.user.authed? and $ops.include?(u.user.nick)
+    if u.message.split(' ')[0] == '!op'
+      if u.message.split(' ')[1].nil?
+        u.channel.op(u.user.nick)
+      else
+        u.channel.op(u.message.split(' ')[1])
+      end
+    elsif u.message.split(' ')[0] == '!voice'
+      if u.message.split(' ')[1].nil?
+        u.channel.voice(u.user.nick)
+      else
+        u.channel.voice(u.message.split(' ')[1])
+      end
+    elsif u.message.split(' ')[0] == '!devoice'
+      if u.message.split(' ')[1].nil?
+        u.channel.devoice(u.user.nick)
+      else
+        u.channel.devoice(u.message.split(' ')[1])
+      end
+    elsif u.message.split(' ')[0] == '!deop'
+      if u.message.split(' ')[1].nil?
+        u.channel.deop(u.user.nick)
+      else
+        u.channel.deop(u.message.split(' ')[1])
+      end
+    end
+  end
+end
