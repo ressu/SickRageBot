@@ -16,7 +16,7 @@ cinch = Cinch::Bot.new do
      :host => '0.0.0.0',
      :port => 1234
     }
-    c.plugins.options[Cinch::Plugins::Identify] = {
+    config.plugins.options[Cinch::Plugins::Identify] = {
         :password => $nspass,
         :type     => :nickserv,
     }
