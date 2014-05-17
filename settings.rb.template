@@ -1,6 +1,7 @@
 $channel = '#channel'
 $server = 'irc.server.net'
 $nick = 'Nick'
+$nspass = 'password'
 $tvdbapikey = 'tvdbapi'
 $googleapikey = 'googleapi'
 $rtapikey = 'rottentomatoesapi'

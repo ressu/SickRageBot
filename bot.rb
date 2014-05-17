@@ -1,4 +1,5 @@
 require 'cinch'
+require 'cinch/plugins/identify'
 require_relative 'functions'
 require_relative 'settings'
 require_relative 'github_commits'
@@ -10,11 +11,15 @@ cinch = Cinch::Bot.new do
     config.nick = $nick
     config.realname = 'SickRage'
     config.user = 'SickRage'
-    config.plugins.plugins = [Cinch::HttpServer, Cinch::GithubCommits]
+    config.plugins.plugins = [Cinch::Plugins::Identify, Cinch::HttpServer, Cinch::GithubCommits]
     config.plugins.options[Cinch::HttpServer] = {
      :host => '0.0.0.0',
      :port => 1234
-   }
+    }
+    c.plugins.options[Cinch::Plugins::Identify] = {
+        :password => $nspass,
+        :type     => :nickserv,
+    }
   end
 
   on :message, /^!tvdb (.+)/i do |m|
