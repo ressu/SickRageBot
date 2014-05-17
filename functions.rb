@@ -130,31 +130,41 @@ def trakt(u)
 end
 
 def mode(u)
-  if u.user.authed? and $ops.include?(u.user.nick)
-    if u.message.split(' ')[0] == '!op'
-      if u.message.split(' ')[1].nil?
-        u.channel.op(u.user.nick)
-      else
-        u.channel.op(u.message.split(' ')[1])
-      end
-    elsif u.message.split(' ')[0] == '!voice'
-      if u.message.split(' ')[1].nil?
-        u.channel.voice(u.user.nick)
-      else
-        u.channel.voice(u.message.split(' ')[1])
-      end
-    elsif u.message.split(' ')[0] == '!devoice'
-      if u.message.split(' ')[1].nil?
-        u.channel.devoice(u.user.nick)
-      else
-        u.channel.devoice(u.message.split(' ')[1])
-      end
-    elsif u.message.split(' ')[0] == '!deop'
-      if u.message.split(' ')[1].nil?
-        u.channel.deop(u.user.nick)
-      else
-        u.channel.deop(u.message.split(' ')[1])
-      end
+  cmd = u.message.split(' ')[0]
+  user = u.message.split(' ')[1]
+
+  if cmd == '!op'
+    if user.nil?
+      Channel($channel).op(u.user.nick) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
+    else
+      Channel($channel).op(user) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
     end
+  elsif cmd == '!voice'
+    if user.nil?
+      Channel($channel).voice(u.user.nick) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+    else
+      Channel($channel).voice(user) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+    end
+  elsif cmd == '!devoice'
+    if user.nil?
+      Channel($channel).devoice(u.user.nick) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+    else
+      Channel($channel).devoice(user) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+    end
+  elsif cmd == '!deop'
+    if user.nil?
+      Channel($channel).deop(u.user.nick) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
+    else
+      Channel($channel).deop(user) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
+    end
+  elsif cmd == '!kb'
+    if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+      Channel($channel).ban("*!*@#{User(user).host}")
+      Channel($channel).kick(user, 'You have been banned.')
+    end
+  elsif cmd == '!unban'
+    Channel($channel).unban("*!*@#{User(user).host}") if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+  elsif cmd == '!kick'
+    Channel($channel).kick(user, u.message.split(" ")[2]) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
   end
 end
