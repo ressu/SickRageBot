@@ -162,6 +162,8 @@ def mode(u)
       Channel($channel).ban("*!*@#{User(user).host}")
       Channel($channel).kick(user, 'You have been banned.')
     end
+  elsif cmd == '!ban'
+    Channel($channel).ban("*!*@#{User(user).host}") if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
   elsif cmd == '!unban'
     Channel($channel).unban("*!*@#{User(user).host}") if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
   elsif cmd == '!kick'

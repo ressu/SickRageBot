@@ -60,7 +60,7 @@ cinch = Cinch::Bot.new do
     m.action_reply "slaps #{m.user.nick} around a bit with a large trout"
   end
 
-  on :message, /^!op|^!voice|^!deop|^!devoice|^!kb|^!unban|^!kick/i do |m|
+  on :message, /^!op|^!voice|^!deop|^!devoice|^!kb|^!ban|^!unban|^!kick/i do |m|
     mode(m)
   end
 end
