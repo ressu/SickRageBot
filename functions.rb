@@ -170,3 +170,7 @@ def mode(u)
     Channel($channel).kick(user, u.message.split(" ")[2]) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
   end
 end
+
+def autoop(u)
+  Channel($channel).op(u.user.nick) unless !u.user.authed? and !$ops[:op].include?(u.user.nick.downcase)
+end

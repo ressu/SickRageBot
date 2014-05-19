@@ -63,6 +63,10 @@ cinch = Cinch::Bot.new do
   on :message, /^!op|^!voice|^!deop|^!devoice|^!kb|^!ban|^!unban|^!kick/i do |m|
     mode(m)
   end
+
+  on :join do |m|
+    autoop(m)
+  end
 end
 
 cinch.start
