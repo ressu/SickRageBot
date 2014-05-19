@@ -179,7 +179,7 @@ def autoop(u)
   end
 end
 
-class Seen < Struct.new(:who, :what, :time)
+class Seen < Struct.new(:who, :where, :what, :time)
   def to_s
     "SEEN - #{who} was seen saying #{what} at #{time}"
   end
