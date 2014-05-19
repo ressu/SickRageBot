@@ -179,8 +179,54 @@ def autoop(u)
   end
 end
 
+class Numeric
+  def duration
+    secs  = self.to_int
+    mins  = secs / 60
+    hours = mins / 60
+    days  = hours / 24
+
+    if days > 0
+      hour_remainder = hours % 24
+      if hour_remainder > 0
+        hour_str = hour_remainder == 1 ? 'hour' : 'hours'
+        "#{days} days and #{hour_remainder} #{hour_str}"
+      elsif days == 1
+        "#{days} day"
+      else
+        "#{days} days"
+      end
+    elsif hours > 0
+      min_remainder = mins % 60
+      if min_remainder > 0
+        min_str = min_remainder == 1 ? 'minute' : 'minutes'
+        "#{hours} hours and #{min_remainder} #{min_str}"
+      elsif hours == 1
+        "#{hours} hour"
+      else
+        "#{hours} hours"
+      end
+    elsif mins > 0
+      sec_remainder = secs % 60
+      if sec_remainder > 0
+        sec_str = sec_remainder == 1 ? 'second' : 'seconds'
+        "#{mins} minutes and #{sec_remainder} #{sec_str}"
+      elsif minutes == 1
+        "#{mins} minute"
+      else
+        "#{mins} minutes"
+      end
+    elsif secs == 1
+      "#{secs} second"
+    elsif secs >= 0
+      "#{secs} seconds"
+    end
+  end
+end
+
 class Seen < Struct.new(:who, :where, :what, :time)
   def to_s
-    "SEEN - #{who} was seen saying #{what} at #{time}"
+    parsed = Time.parse("#{time}")
+    "SEEN - #{who} was seen saying #{what} :: #{(Time.now - parsed).duration} ago."
   end
 end
