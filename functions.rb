@@ -227,6 +227,6 @@ end
 class Seen < Struct.new(:who, :where, :what, :time)
   def to_s
     parsed = Time.parse("#{time}")
-    "SEEN - #{who} was seen saying #{what} :: #{(Time.now - parsed).duration} ago."
+    "SEEN - #{who} was seen saying \"#{what}\" :: #{(Time.now - parsed).duration} ago."
   end
 end
