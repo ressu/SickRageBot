@@ -172,7 +172,15 @@ def mode(u)
 end
 
 def autoop(u)
-  if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
-    Channel($channel).op(u.user.nick)
+  unless u.user.nick == $nick
+    if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
+      Channel($channel).op(u.user.nick)
+    end
+  end
+end
+
+class Seen < Struct.new(:who, :what, :time)
+  def to_s
+    "SEEN - #{who} was seen saying #{what} at #{time}"
   end
 end
