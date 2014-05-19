@@ -172,5 +172,7 @@ def mode(u)
 end
 
 def autoop(u)
-  Channel($channel).op(u.user.nick) unless !u.user.authed? and !$ops[:op].include?(u.user.nick.downcase)
+  if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
+    Channel($channel).op(u.user.nick)
+  end
 end
