@@ -1,4 +1,4 @@
-$channel = '#channel'
+$channel = ['#channel']
 $server = 'irc.server.net'
 $nick = 'Nick'
 $nspass = 'password'

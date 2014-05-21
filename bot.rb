@@ -7,7 +7,7 @@ require_relative 'github_commits'
 cinch = Cinch::Bot.new do
   configure do |config|
     config.server = $server
-    config.channels = [$channel]
+    config.channels = $channel
     config.nick = $nick
     config.realname = 'SickRage'
     config.user = 'SickRage'

@@ -135,46 +135,46 @@ def mode(u)
 
   if cmd == '!op'
     if user.nil?
-      Channel($channel).op(u.user.nick) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
+      Channel(u.channel).op(u.user.nick) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
     else
-      Channel($channel).op(user) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
+      Channel(u.channel).op(user) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
     end
   elsif cmd == '!voice'
     if user.nil?
-      Channel($channel).voice(u.user.nick) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+      Channel(u.channel).voice(u.user.nick) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
     else
-      Channel($channel).voice(user) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+      Channel(u.channel).voice(user) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
     end
   elsif cmd == '!devoice'
     if user.nil?
-      Channel($channel).devoice(u.user.nick) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+      Channel(u.channel).devoice(u.user.nick) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
     else
-      Channel($channel).devoice(user) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+      Channel(u.channel).devoice(user) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
     end
   elsif cmd == '!deop'
     if user.nil?
-      Channel($channel).deop(u.user.nick) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
+      Channel(u.channel).deop(u.user.nick) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
     else
-      Channel($channel).deop(user) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
+      Channel(u.channel).deop(user) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
     end
   elsif cmd == '!kb'
     if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
-      Channel($channel).ban("*!*@#{User(user).host}")
-      Channel($channel).kick(user, 'You have been banned.')
+      Channel(u.channel).ban("*!*@#{User(user).host}")
+      Channel(u.channel).kick(user, 'You have been banned.')
     end
   elsif cmd == '!ban'
-    Channel($channel).ban("*!*@#{User(user).host}") if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+    Channel(u.channel).ban("*!*@#{User(user).host}") if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
   elsif cmd == '!unban'
-    Channel($channel).unban("*!*@#{User(user).host}") if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+    Channel(u.channel).unban("*!*@#{User(user).host}") if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
   elsif cmd == '!kick'
-    Channel($channel).kick(user, u.message.split(" ")[2]) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+    Channel(u.channel).kick(user, u.message.split(" ")[2]) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
   end
 end
 
 def autoop(u)
   unless u.user.nick == $nick
     if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
-      Channel($channel).op(u.user.nick)
+      Channel(u.channel).op(u.user.nick)
     end
   end
 end
