@@ -78,7 +78,7 @@ cinch = Cinch::Bot.new do
       m.reply "That's me!"
     elsif nick == m.user.nick
       m.reply "That's you!"
-    elsif !Log.where(chan: m.channel.to_s, t[:user].matchesm.message.split(' ')[1].downcase).last.nil?
+    elsif !Log.where(chan: m.channel.to_s, user: m.message.split(' ')[1].downcase).last.nil?
       q = Log.where(chan: m.channel.to_s, user: m.message.split(' ')[1].downcase).last
       m.reply "#{m.message.split(' ')[1].downcase} was last seen saying \"#{q[:message]}\" #{(Time.now - Time.parse("#{q[:time]}")).duration} ago."
     else
