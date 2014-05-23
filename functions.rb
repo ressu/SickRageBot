@@ -175,6 +175,10 @@ def autoop(u)
   unless u.user.nick == $nick
     if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
       Channel(u.channel).op(u.user.nick)
+    elsif u.user.authed? and $ops[:opmod].include?(u.user.nick.downcase) and u.channel != $channel[1]
+      Channel(u.channel).voice(u.user.nick)
+    elsif u.user.authed? and $ops[:opmod].include?(u.user.nick.downcase) and u.channel == $channel[1]
+      Channel(u.channel).op(u.user.nick)
     end
   end
 end
