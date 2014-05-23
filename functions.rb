@@ -133,41 +133,42 @@ def mode(u)
   cmd = u.message.split(' ')[0]
   user = u.message.split(' ')[1]
 
-  if cmd == '!op'
+  case
+  when cmd == '!op'
     if user.nil?
       Channel(u.channel).op(u.user.nick) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
     else
       Channel(u.channel).op(user) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
     end
-  elsif cmd == '!voice'
+  when cmd == '!voice'
     if user.nil?
       Channel(u.channel).voice(u.user.nick) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
     else
       Channel(u.channel).voice(user) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
     end
-  elsif cmd == '!devoice'
+  when cmd == '!devoice'
     if user.nil?
       Channel(u.channel).devoice(u.user.nick) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
     else
       Channel(u.channel).devoice(user) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
     end
-  elsif cmd == '!deop'
+  when cmd == '!deop'
     if user.nil?
       Channel(u.channel).deop(u.user.nick) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
     else
       Channel(u.channel).deop(user) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
     end
-  elsif cmd == '!kb'
+  when cmd == '!kb'
     if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
       Channel(u.channel).ban("*!*@#{User(user).host}")
       Channel(u.channel).kick(user, 'You have been banned.')
     end
-  elsif cmd == '!ban'
+  when cmd == '!ban'
     Channel(u.channel).ban("*!*@#{User(user).host}") if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
-  elsif cmd == '!unban'
+  when cmd == '!unban'
     Channel(u.channel).unban("*!*@#{User(user).host}") if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
-  elsif cmd == '!kick'
-    Channel(u.channel).kick(user, u.message.split(" ")[2]) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+  when cmd == '!kick'
+    Channel(u.channel).kick(user, u.message.split(' ')[2]) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
   end
 end
 
@@ -175,9 +176,9 @@ def autoop(u)
   unless u.user.nick == $nick
     if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
       Channel(u.channel).op(u.user.nick)
-    elsif u.user.authed? and $ops[:opmod].include?(u.user.nick.downcase) and u.channel != $channel[1].split(" ")[0]
+    elsif u.user.authed? and $ops[:opmod].include?(u.user.nick.downcase) and u.channel != $channel[1].split(' ')[0]
       Channel(u.channel).voice(u.user.nick)
-    elsif u.user.authed? and $ops[:opmod].include?(u.user.nick.downcase) and u.channel == $channel[1].split(" ")[0]
+    elsif u.user.authed? and $ops[:opmod].include?(u.user.nick.downcase) and u.channel == $channel[1].split(' ')[0]
       Channel(u.channel).op(u.user.nick)
     end
   end
@@ -225,12 +226,5 @@ class Numeric
     elsif secs >= 0
       "#{secs} seconds"
     end
-  end
-end
-
-class Seen < Struct.new(:who, :where, :what, :time)
-  def to_s
-    parsed = Time.parse("#{time}")
-    "SEEN - #{who} was seen saying \"#{what}\" :: #{(Time.now - parsed).duration} ago."
   end
 end

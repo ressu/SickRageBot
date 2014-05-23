@@ -3,6 +3,7 @@ require 'cinch/plugins/identify'
 require_relative 'functions'
 require_relative 'settings'
 require_relative 'github_commits'
+require_relative 'db'
 
 cinch = Cinch::Bot.new do
   configure do |config|
@@ -69,7 +70,7 @@ cinch = Cinch::Bot.new do
   end
 
   on :channel do |m|
-    $users[m.user.nick] = Seen.new(m.user.nick, m.channel, m.message, Time.new)
+    Log.create(:chan => m.channel.to_s, :user => m.user.nick, :message => m.message, :time => Time.now.to_s)
   end
 
   on :message, /^!seen (.+)/ do |m, nick|
@@ -77,8 +78,9 @@ cinch = Cinch::Bot.new do
       m.reply "That's me!"
     elsif nick == m.user.nick
       m.reply "That's you!"
-    elsif $users.key?(nick)
-      m.reply $users[nick].to_s
+    elsif !Log.where(chan: m.channel.to_s, user: m.message.split(' ')[1]).last.nil?
+      q = Log.where(chan: m.channel.to_s, user: m.message.split(' ')[1]).last
+      m.reply "#{q[:user]} was last seen saying \"#{q[:message]}\" #{(Time.now - Time.parse("#{q[:time]}")).duration} ago."
     else
       m.reply "I haven't seen #{nick}"
     end
