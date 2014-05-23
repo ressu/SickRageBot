@@ -70,7 +70,7 @@ cinch = Cinch::Bot.new do
   end
 
   on :channel do |m|
-    Log.create(:chan => m.channel.to_s, :user => m.user.nick, :message => m.message, :time => Time.now.to_s)
+    Log.create(:chan => m.channel.to_s, :user => m.user.nick.downcase, :message => m.message, :time => Time.now.to_s)
   end
 
   on :message, /^!seen (.+)/ do |m, nick|
