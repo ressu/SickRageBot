@@ -184,8 +184,6 @@ def autoop(u)
       Channel(u.channel).op(u.user.nick)
     elsif u.user.authed? and q[:roles].include?('v')
       Channel(u.channel).voice(u.user.nick)
-    elsif u.user.authed? and q[:roles].include?('o')
-      Channel(u.channel).op(u.user.nick)
     end
 
     Access.connection.close
