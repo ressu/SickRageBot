@@ -41,12 +41,7 @@ cinch = Cinch::Bot.new do
   end
 
   on :message, /^!list/i do |m|
-    User(m.user.nick).send('!tvdb <name of show>: Searches TVDB for specified show. Eg. !tvdb the simpsons')
-    User(m.user.nick).send('!tvrage <name of show>: Searches TVRAGE for specified show. Eg. !tvrage the simpsons')
-    User(m.user.nick).send('!tv <name of show>: Searches both TVDB and TVRAGE for specified show. Eg. !tv the simpsons')
-    User(m.user.nick).send('!movie <name of movie>: Searches IMDB and RT for a specified movie. Eg. !movie spiderman')
-    User(m.user.nick).send('!issues: Reports amount of open issues and unverified bugs.')
-    User(m.user.nick).send('!trakt <user>: Returns watched stats for the inputted user. Eg. !trakt senseye')
+    list(m)
   end
 
   on :message, /^!movie/i do |m|
@@ -55,6 +50,10 @@ cinch = Cinch::Bot.new do
 
   on :message, /^!trakt/i do |m|
     trakt(m)
+  end
+
+  on :message, /^!access/i do |m|
+    access(m)
   end
 
   on :message, /(.+)ACTION slaps #{$nick}/i do |m|
@@ -70,20 +69,11 @@ cinch = Cinch::Bot.new do
   end
 
   on :channel do |m|
-    Log.create(:chan => m.channel.to_s, :user => m.user.nick.downcase, :message => m.message, :time => Time.now.to_s)
+    dblog(m)
   end
 
   on :message, /^!seen (.+)/ do |m, nick|
-    if nick == bot.nick
-      m.reply "That's me!"
-    elsif nick == m.user.nick
-      m.reply "That's you!"
-    elsif !Log.where(chan: m.channel.to_s, user: m.message.split(' ')[1].downcase).last.nil?
-      q = Log.where(chan: m.channel.to_s, user: m.message.split(' ')[1].downcase).last
-      m.reply "#{m.message.split(' ')[1].downcase} was last seen saying \"#{q[:message]}\" #{(Time.now - Time.parse("#{q[:time]}")).duration} ago."
-    else
-      m.reply "I haven't seen #{nick}"
-    end
+    seen(m, nick)
   end
 end
 

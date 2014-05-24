@@ -6,5 +6,4 @@ $tvdbapikey = 'tvdbapi'
 $googleapikey = 'googleapi'
 $rtapikey = 'rottentomatoesapi'
 $traktapikey = 'traktapi'
-$ops = {:op => 'oper', :hop => 'hoper'}
-$users = {}
+$admin = 'nick'

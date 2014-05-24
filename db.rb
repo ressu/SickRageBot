@@ -4,8 +4,8 @@ require 'sqlite3'
 ActiveRecord::Base.establish_connection(
     :adapter => 'sqlite3',
     :database => 'irc.db',
-    :pool => '100'
 )
+
 unless File.exist?('irc.db')
   ActiveRecord::Schema.define do
     create_table :logs do |table|
@@ -14,7 +14,7 @@ unless File.exist?('irc.db')
       table.column :message, :string
       table.column :time, :string
     end
-    create_table :access do |table|
+    create_table :accesses do |table|
       table.column :chan, :string
       table.column :user, :string
       table.column :roles, :string

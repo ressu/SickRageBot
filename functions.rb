@@ -5,6 +5,7 @@ require 'google_url_shortener'
 require 'json'
 require 'openssl'
 require_relative 'settings'
+require_relative 'db'
 
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 Google::UrlShortener::Base.api_key = $googleapikey
@@ -132,55 +133,62 @@ end
 def mode(u)
   cmd = u.message.split(' ')[0]
   user = u.message.split(' ')[1]
+  q = Access.where(user: u.user.nick, chan: u.channel.to_s).last
 
   case
   when cmd == '!op'
     if user.nil?
-      Channel(u.channel).op(u.user.nick) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
+      Channel(u.channel).op(u.user.nick) if u.user.authed? and q[:roles].include?('o')
     else
-      Channel(u.channel).op(user) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
+      Channel(u.channel).op(user) if u.user.authed? and q[:roles].include?('o')
     end
   when cmd == '!voice'
     if user.nil?
-      Channel(u.channel).voice(u.user.nick) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+      Channel(u.channel).voice(u.user.nick) if u.user.authed? and q[:roles].include?('v')
     else
-      Channel(u.channel).voice(user) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+      Channel(u.channel).voice(user) if u.user.authed? and q[:roles].include?('v')
     end
   when cmd == '!devoice'
     if user.nil?
-      Channel(u.channel).devoice(u.user.nick) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+      Channel(u.channel).devoice(u.user.nick) if u.user.authed? and q[:roles].include?('v')
     else
-      Channel(u.channel).devoice(user) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+      Channel(u.channel).devoice(user) if u.user.authed? and q[:roles].include?('v')
     end
   when cmd == '!deop'
     if user.nil?
-      Channel(u.channel).deop(u.user.nick) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
+      Channel(u.channel).deop(u.user.nick) if u.user.authed? and q[:roles].include?('o')
     else
-      Channel(u.channel).deop(user) if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
+      Channel(u.channel).deop(user) if u.user.authed? and q[:roles].include?('o')
     end
   when cmd == '!kb'
-    if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+    if u.user.authed? and q[:roles].include?('kb')
       Channel(u.channel).ban("*!*@#{User(user).host}")
       Channel(u.channel).kick(user, 'You have been banned.')
     end
   when cmd == '!ban'
-    Channel(u.channel).ban("*!*@#{User(user).host}") if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+    Channel(u.channel).ban("*!*@#{User(user).host}") if u.user.authed? and q[:roles].include?('b')
   when cmd == '!unban'
-    Channel(u.channel).unban("*!*@#{User(user).host}") if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+    Channel(u.channel).unban("*!*@#{User(user).host}") if u.user.authed? and q[:roles].include?('b')
   when cmd == '!kick'
-    Channel(u.channel).kick(user, u.message.split(' ')[2]) if u.user.authed? and $ops.values.any? {|k| k.include? u.user.nick.downcase}
+    Channel(u.channel).kick(user, u.message.split(' ')[2]) if u.user.authed? and q[:roles].include?('k')
   end
+
+  Access.connection.close
 end
 
 def autoop(u)
   unless u.user.nick == $nick
-    if u.user.authed? and $ops[:op].include?(u.user.nick.downcase)
+    q = Access.where(user: u.user.nick, chan: u.channel.to_s).last
+
+    if u.user.authed? and q[:roles].include?('o')
       Channel(u.channel).op(u.user.nick)
-    elsif u.user.authed? and $ops[:opmod].include?(u.user.nick.downcase) and u.channel != $channel[1].split(' ')[0]
+    elsif u.user.authed? and q[:roles].include?('v')
       Channel(u.channel).voice(u.user.nick)
-    elsif u.user.authed? and $ops[:opmod].include?(u.user.nick.downcase) and u.channel == $channel[1].split(' ')[0]
+    elsif u.user.authed? and q[:roles].include?('o')
       Channel(u.channel).op(u.user.nick)
     end
+
+    Access.connection.close
   end
 end
 
@@ -227,4 +235,57 @@ class Numeric
       "#{secs} seconds"
     end
   end
+end
+
+def access(u)
+  if u.user.authed? and u.user.nick == $admin
+    chan = u.message.split(' ')[1]
+    cmd = u.message.split(' ')[2]
+    user = u.message.split(' ')[3]
+    role = u.message.split(' ')[4]
+
+    if cmd == 'add'
+      Access.create(:chan => chan, :user => user, :roles => role)
+      Access.connection.close
+      u.reply "Added #{user} as \"#{role}\" in #{chan}"
+    elsif cmd == 'del'
+      Access.where(user: user, chan: chan).destroy_all
+      Access.connection.close
+      u.reply "Removed #{user} from #{chan}"
+    elsif cmd == 'list'
+      Access.where(chan: chan).each do |q|
+        u.reply "#{q[:user]} :: Roles: #{q[:roles]}"
+      end
+      Access.connection.close
+    end
+  end
+end
+
+def dblog(u)
+  Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => u.message, :time => Time.now.to_s)
+  Log.connection.close
+end
+
+def seen(u, nick)
+  if nick == bot.nick
+    u.reply "That's me!"
+  elsif nick == u.user.nick
+    u.reply "That's you!"
+  elsif !Log.where(chan: u.channel.to_s, user: nick.downcase).last.nil?
+    q = Log.where(chan: u.channel.to_s, user: nick.downcase).last
+    u.reply "#{nick} was last seen saying \"#{q[:message]}\" #{(Time.now - Time.parse("#{q[:time]}")).duration} ago."
+    Log.connection.close
+  else
+    u.reply "I haven't seen #{nick}"
+  end
+end
+
+def list(u)
+  User(u.user.nick).send('!tvdb <name of show>: Searches TVDB for specified show. Eg. !tvdb the simpsons')
+  User(u.user.nick).send('!tvrage <name of show>: Searches TVRAGE for specified show. Eg. !tvrage the simpsons')
+  User(u.user.nick).send('!tv <name of show>: Searches both TVDB and TVRAGE for specified show. Eg. !tv the simpsons')
+  User(u.user.nick).send('!movie <name of movie>: Searches IMDB and RT for a specified movie. Eg. !movie spiderman')
+  User(u.user.nick).send('!issues: Reports amount of open issues and unverified bugs.')
+  User(u.user.nick).send('!trakt <user>: Returns watched stats for the inputted user. Eg. !trakt senseye')
+  User(u.user.nick).send('!seen <user>: the last message sent by inputted user as well as when it was sent. Eg. !seen tehspede')
 end
