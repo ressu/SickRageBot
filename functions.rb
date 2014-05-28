@@ -239,7 +239,7 @@ def access(u)
     if u.user.authed? and u.user.nick == $admin
       chan = u.message.split(' ')[1]
       cmd = u.message.split(' ')[2]
-      user = u.message.split(' ')[3]
+      user = u.message.split(' ')[3].to_s
       role = u.message.split(' ')[4]
 
       if cmd == 'add'
