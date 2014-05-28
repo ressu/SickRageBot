@@ -66,10 +66,15 @@ cinch = Cinch::Bot.new do
 
   on :join do |m|
     autoop(m)
+    dblog(m,'join')
+  end
+
+  on :part do |m|
+    dblog(m,'quit')
   end
 
   on :channel do |m|
-    dblog(m)
+    dblog(m,'say')
   end
 
   on :message, /^!seen (.+)/ do |m, nick|

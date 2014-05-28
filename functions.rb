@@ -131,64 +131,62 @@ def trakt(u)
 end
 
 def mode(u)
-  cmd = u.message.split(' ')[0]
-  user = u.message.split(' ')[1]
-  q = Access.where(user: u.user.nick, chan: u.channel.to_s).last
+  ActiveRecord::Base.connection_pool.with_connection do
+    cmd = u.message.split(' ')[0]
+    user = u.message.split(' ')[1]
+    q = Access.where(user: u.user.nick, chan: u.channel.to_s).last
 
-  case
-  when cmd == '!op'
-    if user.nil?
-      Channel(u.channel).op(u.user.nick) if u.user.authed? and q[:roles].include?('o')
-    else
-      Channel(u.channel).op(user) if u.user.authed? and q[:roles].include?('o')
+    case
+      when cmd == '!op'
+        if user.nil?
+          Channel(u.channel).op(u.user.nick) if u.user.authed? and q[:roles].include?('o')
+        else
+          Channel(u.channel).op(user) if u.user.authed? and q[:roles].include?('o')
+        end
+      when cmd == '!voice'
+        if user.nil?
+          Channel(u.channel).voice(u.user.nick) if u.user.authed? and q[:roles].include?('v')
+        else
+          Channel(u.channel).voice(user) if u.user.authed? and q[:roles].include?('v')
+        end
+      when cmd == '!devoice'
+        if user.nil?
+          Channel(u.channel).devoice(u.user.nick) if u.user.authed? and q[:roles].include?('v')
+        else
+          Channel(u.channel).devoice(user) if u.user.authed? and q[:roles].include?('v')
+        end
+      when cmd == '!deop'
+        if user.nil?
+          Channel(u.channel).deop(u.user.nick) if u.user.authed? and q[:roles].include?('o')
+        else
+          Channel(u.channel).deop(user) if u.user.authed? and q[:roles].include?('o')
+        end
+      when cmd == '!kb'
+        if u.user.authed? and q[:roles].include?('kb')
+          Channel(u.channel).ban("*!*@#{User(user).host}")
+          Channel(u.channel).kick(user, 'You have been banned.')
+        end
+      when cmd == '!ban'
+        Channel(u.channel).ban("*!*@#{User(user).host}") if u.user.authed? and q[:roles].include?('b')
+      when cmd == '!unban'
+        Channel(u.channel).unban("*!*@#{User(user).host}") if u.user.authed? and q[:roles].include?('b')
+      when cmd == '!kick'
+        Channel(u.channel).kick(user, u.message.split(' ')[2]) if u.user.authed? and q[:roles].include?('k')
     end
-  when cmd == '!voice'
-    if user.nil?
-      Channel(u.channel).voice(u.user.nick) if u.user.authed? and q[:roles].include?('v')
-    else
-      Channel(u.channel).voice(user) if u.user.authed? and q[:roles].include?('v')
-    end
-  when cmd == '!devoice'
-    if user.nil?
-      Channel(u.channel).devoice(u.user.nick) if u.user.authed? and q[:roles].include?('v')
-    else
-      Channel(u.channel).devoice(user) if u.user.authed? and q[:roles].include?('v')
-    end
-  when cmd == '!deop'
-    if user.nil?
-      Channel(u.channel).deop(u.user.nick) if u.user.authed? and q[:roles].include?('o')
-    else
-      Channel(u.channel).deop(user) if u.user.authed? and q[:roles].include?('o')
-    end
-  when cmd == '!kb'
-    if u.user.authed? and q[:roles].include?('kb')
-      Channel(u.channel).ban("*!*@#{User(user).host}")
-      Channel(u.channel).kick(user, 'You have been banned.')
-    end
-  when cmd == '!ban'
-    Channel(u.channel).ban("*!*@#{User(user).host}") if u.user.authed? and q[:roles].include?('b')
-  when cmd == '!unban'
-    Channel(u.channel).unban("*!*@#{User(user).host}") if u.user.authed? and q[:roles].include?('b')
-  when cmd == '!kick'
-    Channel(u.channel).kick(user, u.message.split(' ')[2]) if u.user.authed? and q[:roles].include?('k')
   end
-
-  ActiveRecord::Base.connection.close
-  ActiveRecord::Base.connection_pool.clear_stale_cached_connections!
 end
 
 def autoop(u)
-  unless u.user.nick == $nick
-    q = Access.where(user: u.user.nick, chan: u.channel.to_s).last
+  ActiveRecord::Base.connection_pool.with_connection do
+    unless u.user.nick == $nick
+      q = Access.where(user: u.user.nick, chan: u.channel.to_s).last
 
-    if u.user.authed? and q[:roles].include?('o')
-      Channel(u.channel).op(u.user.nick)
-    elsif u.user.authed? and q[:roles].include?('v')
-      Channel(u.channel).voice(u.user.nick)
+      if u.user.authed? and q[:roles].include?('o')
+        Channel(u.channel).op(u.user.nick)
+      elsif u.user.authed? and q[:roles].include?('v')
+        Channel(u.channel).voice(u.user.nick)
+      end
     end
-
-    ActiveRecord::Base.connection.close
-    ActiveRecord::Base.connection_pool.clear_stale_cached_connections!
   end
 end
 
@@ -238,49 +236,53 @@ class Numeric
 end
 
 def access(u)
-  if u.user.authed? and u.user.nick == $admin
-    chan = u.message.split(' ')[1]
-    cmd = u.message.split(' ')[2]
-    user = u.message.split(' ')[3]
-    role = u.message.split(' ')[4]
+  ActiveRecord::Base.connection_pool.with_connection do
+    if u.user.authed? and u.user.nick == $admin
+      chan = u.message.split(' ')[1]
+      cmd = u.message.split(' ')[2]
+      user = u.message.split(' ')[3]
+      role = u.message.split(' ')[4]
 
-    if cmd == 'add'
-      Access.create(:chan => chan, :user => user, :roles => role)
-      ActiveRecord::Base.connection.close
-      u.reply "Added #{user} as \"#{role}\" in #{chan}"
-    elsif cmd == 'del'
-      Access.where(user: user, chan: chan).destroy_all
-      ActiveRecord::Base.connection.close
-      u.reply "Removed #{user} from #{chan}"
-    elsif cmd == 'list'
-      Access.where(chan: chan).each do |q|
-        u.reply "#{q[:user]} :: Roles: #{q[:roles]}"
+      if cmd == 'add'
+        Access.create(:chan => chan, :user => user, :roles => role)
+        u.reply "Added #{user} as \"#{role}\" in #{chan}"
+      elsif cmd == 'del'
+        Access.where(user: user, chan: chan).destroy_all
+        u.reply "Removed #{user} from #{chan}"
+      elsif cmd == 'list'
+        Access.where(chan: chan).each do |q|
+          u.reply "#{q[:user]} :: Roles: #{q[:roles]}"
+        end
       end
-      ActiveRecord::Base.connection.close
     end
   end
-  ActiveRecord::Base.connection_pool.clear_stale_cached_connections!
 end
 
-def dblog(u)
-  Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => u.message, :time => Time.now.to_s)
-  ActiveRecord::Base.connection.close
-  ActiveRecord::Base.connection_pool.clear_stale_cached_connections!
+def dblog(u, a)
+  ActiveRecord::Base.connection_pool.with_connection do
+    if a == 'join'
+      Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "joining #{u.channel.to_s}", :time => Time.now.to_s)
+    elsif a == 'quit'
+      Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "leaving #{u.channel.to_s}", :time => Time.now.to_s)
+    elsif a == 'say'
+      Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "saying \"#{u.message}\"", :time => Time.now.to_s)
+    end
+  end
 end
 
 def seen(u, nick)
-  if nick == bot.nick
-    u.reply "That's me!"
-  elsif nick == u.user.nick
-    u.reply "That's you!"
-  elsif !Log.where(chan: u.channel.to_s, user: nick.downcase).last.nil?
-    q = Log.where(chan: u.channel.to_s, user: nick.downcase).last
-    u.reply "#{nick} was last seen saying \"#{q[:message]}\" #{(Time.now - Time.parse("#{q[:time]}")).duration} ago."
-    ActiveRecord::Base.connection.close
-  else
-    u.reply "I haven't seen #{nick}"
+  ActiveRecord::Base.connection_pool.with_connection do
+    if nick == bot.nick
+      u.reply "That's me!"
+    elsif nick == u.user.nick
+      u.reply "That's you!"
+    elsif !Log.where(chan: u.channel.to_s, user: nick.downcase).last.nil?
+      q = Log.where(chan: u.channel.to_s, user: nick.downcase).last
+      u.reply "#{nick} was last seen #{q[:message]} #{(Time.now - Time.parse("#{q[:time]}")).duration} ago."
+    else
+      u.reply "I haven't seen #{nick}"
+    end
   end
-  ActiveRecord::Base.connection_pool.clear_stale_cached_connections!
 end
 
 def list(u)
