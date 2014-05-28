@@ -4,6 +4,7 @@ require 'cgi'
 require 'google_url_shortener'
 require 'json'
 require 'openssl'
+require 'time_diff'
 require_relative 'settings'
 require_relative 'db'
 
@@ -131,129 +132,43 @@ def trakt(u)
 end
 
 def mode(u)
-  ActiveRecord::Base.connection_pool.with_connection do
-    cmd = u.message.split(' ')[0]
-    user = u.message.split(' ')[1]
-    q = Access.where(user: u.user.nick.to_s, chan: u.channel.to_s).last
+  cmd = u.message.split(' ')[0]
+  user = u.message.split(' ')[1]
 
-    case
-      when cmd == '!op'
-        if user.nil?
-          Channel(u.channel).op(u.user.nick) if u.user.authed? and q[:roles].include?('o')
-        else
-          Channel(u.channel).op(user) if u.user.authed? and q[:roles].include?('o')
-        end
-      when cmd == '!voice'
-        if user.nil?
-          Channel(u.channel).voice(u.user.nick) if u.user.authed? and q[:roles].include?('v')
-        else
-          Channel(u.channel).voice(user) if u.user.authed? and q[:roles].include?('v')
-        end
-      when cmd == '!devoice'
-        if user.nil?
-          Channel(u.channel).devoice(u.user.nick) if u.user.authed? and q[:roles].include?('v')
-        else
-          Channel(u.channel).devoice(user) if u.user.authed? and q[:roles].include?('v')
-        end
-      when cmd == '!deop'
-        if user.nil?
-          Channel(u.channel).deop(u.user.nick) if u.user.authed? and q[:roles].include?('o')
-        else
-          Channel(u.channel).deop(user) if u.user.authed? and q[:roles].include?('o')
-        end
-      when cmd == '!kb'
-        if u.user.authed? and q[:roles].include?('kb')
-          Channel(u.channel).ban("*!*@#{User(user).host}")
-          Channel(u.channel).kick(user, 'You have been banned.')
-        end
-      when cmd == '!ban'
-        Channel(u.channel).ban("*!*@#{User(user).host}") if u.user.authed? and q[:roles].include?('b')
-      when cmd == '!unban'
-        Channel(u.channel).unban("*!*@#{User(user).host}") if u.user.authed? and q[:roles].include?('b')
-      when cmd == '!kick'
-        Channel(u.channel).kick(user, u.message.split(' ')[2]) if u.user.authed? and q[:roles].include?('k')
-    end
-  end
-end
-
-def autoop(u)
-  ActiveRecord::Base.connection_pool.with_connection do
-    unless u.user.nick == $nick
-      q = Access.where(user: u.user.nick.to_s, chan: u.channel.to_s).last
-      if u.user.authed? and q[:roles].include?('o')
-        Channel(u.channel).op(u.user.nick)
-      elsif u.user.authed? and q[:roles].include?('v')
-        Channel(u.channel).voice(u.user.nick)
+  case
+    when cmd == '!op'
+      unless user.nil?
+        Channel(u.channel).op(user) if u.user.opped?
       end
-    end
-  end
-end
-
-class Numeric
-  def duration
-    secs  = self.to_int
-    mins  = secs / 60
-    hours = mins / 60
-    days  = hours / 24
-
-    if days > 0
-      hour_remainder = hours % 24
-      if hour_remainder > 0
-        hour_str = hour_remainder == 1 ? 'hour' : 'hours'
-        "#{days} days and #{hour_remainder} #{hour_str}"
-      elsif days == 1
-        "#{days} day"
+    when cmd == '!voice'
+      if user.nil?
+        Channel(u.channel).voice(u.user.nick) if u.user.opped?
       else
-        "#{days} days"
+        Channel(u.channel).voice(user) if u.user.opped?
       end
-    elsif hours > 0
-      min_remainder = mins % 60
-      if min_remainder > 0
-        min_str = min_remainder == 1 ? 'minute' : 'minutes'
-        "#{hours} hours and #{min_remainder} #{min_str}"
-      elsif hours == 1
-        "#{hours} hour"
+    when cmd == '!devoice'
+      if user.nil?
+        Channel(u.channel).devoice(u.user.nick) if u.user.opped?
       else
-        "#{hours} hours"
+        Channel(u.channel).devoice(user) if u.user.opped?
       end
-    elsif mins > 0
-      sec_remainder = secs % 60
-      if sec_remainder > 0
-        sec_str = sec_remainder == 1 ? 'second' : 'seconds'
-        "#{mins} minutes and #{sec_remainder} #{sec_str}"
-      elsif minutes == 1
-        "#{mins} minute"
+    when cmd == '!deop'
+      if user.nil?
+        Channel(u.channel).deop(u.user.nick) if u.user.opped?
       else
-        "#{mins} minutes"
+        Channel(u.channel).deop(user) if u.user.opped?
       end
-    elsif secs == 1
-      "#{secs} second"
-    elsif secs >= 0
-      "#{secs} seconds"
-    end
-  end
-end
-
-def access(u)
-  ActiveRecord::Base.connection_pool.with_connection do
-    if u.user.authed? and u.user.nick == $admin
-      chan = u.message.split(' ')[1]
-      cmd = u.message.split(' ')[2]
-      user = u.message.split(' ')[3].to_s
-      role = u.message.split(' ')[4]
-
-      if cmd == 'add'
-        Access.create(:chan => chan, :user => user, :roles => role)
-        u.reply "Added #{user} as \"#{role}\" in #{chan}"
-      elsif cmd == 'del'
-        Access.where(user: user, chan: chan).destroy_all
-        u.reply "Removed #{user} from #{chan}"
-      elsif cmd == 'list'
-        Access.where(chan: chan).each do |q|
-          u.reply "#{q[:user]} :: Roles: #{q[:roles]}"
-        end
+    when cmd == '!kb'
+      if u.user.opped?
+        Channel(u.channel).ban("*!*@#{User(user).host}")
+        Channel(u.channel).kick(user, 'You have been banned.')
       end
-    end
+    when cmd == '!ban'
+      Channel(u.channel).ban("*!*@#{User(user).host}") if u.user.opped?
+    when cmd == '!unban'
+      Channel(u.channel).unban("*!*@#{User(user).host}") if u.user.opped?
+    when cmd == '!kick'
+      Channel(u.channel).kick(user, u.message.split(' ')[2]) if u.user.opped?
   end
 end
 
@@ -281,15 +196,15 @@ def seen(u, nick)
       u.reply "That's you!"
     elsif !Log.where(chan: u.channel.to_s, user: nick.downcase).last.nil?
       q = Log.where(chan: u.channel.to_s, user: nick.downcase).last
-      if !Log.where(chan: 'ALL', user: nick.downcase).last.nil?
+      if Log.where(chan: 'ALL', user: nick.downcase).last.nil?
+        u.reply "#{nick} was last seen #{q[:message]} #{Time.diff(Time.now,Time.parse("#{q[:time]}",'%d, %H, %N and %S'))} ago."
+      else
         q2 = Log.where(chan: 'ALL', user: nick.downcase).last
         if Time.parse("#{q2[:time]}") > Time.parse("#{q[:time]}")
-          u.reply "#{nick} was last seen #{q2[:message]} #{(Time.now - Time.parse("#{q2[:time]}")).duration} ago."
+          u.reply "#{nick} was last seen #{q2[:message]} #{Time.diff(Time.now,Time.parse("#{q2[:time]}",'%d, %H, %N and %S'))} ago."
         else
-          u.reply "#{nick} was last seen #{q[:message]} #{(Time.now - Time.parse("#{q[:time]}")).duration} ago."
+          u.reply "#{nick} was last seen #{q[:message]} #{Time.diff(Time.now,Time.parse("#{q[:time]}",'%d, %H, %N and %S'))} ago."
         end
-      else
-        u.reply "#{nick} was last seen #{q[:message]} #{(Time.now - Time.parse("#{q[:time]}")).duration} ago."
       end
     else
       u.reply "I haven't seen #{nick}"
