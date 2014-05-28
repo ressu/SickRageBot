@@ -263,7 +263,11 @@ def dblog(u, a)
     if a == 'join'
       Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "joining #{u.channel.to_s}", :time => Time.now.to_s)
     elsif a == 'quit'
-      Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "leaving #{u.channel.to_s}", :time => Time.now.to_s)
+      if u.channel.nil?
+        Log.create(:chan => 'ALL', :user => u.user.nick.downcase, :message => "quitting", :time => Time.now.to_s)
+      else
+        Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "leaving #{u.channel.to_s}", :time => Time.now.to_s)
+      end
     elsif a == 'say'
       Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "saying \"#{u.message}\"", :time => Time.now.to_s)
     end
@@ -278,7 +282,16 @@ def seen(u, nick)
       u.reply "That's you!"
     elsif !Log.where(chan: u.channel.to_s, user: nick.downcase).last.nil?
       q = Log.where(chan: u.channel.to_s, user: nick.downcase).last
-      u.reply "#{nick} was last seen #{q[:message]} #{(Time.now - Time.parse("#{q[:time]}")).duration} ago."
+      if !Log.where(chan: 'ALL', user: nick.downcase).last.nil?
+        q2 = Log.where(chan: 'ALL', user: nick.downcase).last
+        if Time.parse("#{q2[:time]}") > Time.parse("#{q[:time]}")
+          u.reply "#{nick} was last seen #{q2[:message]} #{(Time.now - Time.parse("#{q2[:time]}")).duration} ago."
+        else
+          u.reply "#{nick} was last seen #{q[:message]} #{(Time.now - Time.parse("#{q[:time]}")).duration} ago."
+        end
+      else
+        u.reply "#{nick} was last seen #{q[:message]} #{(Time.now - Time.parse("#{q[:time]}")).duration} ago."
+      end
     else
       u.reply "I haven't seen #{nick}"
     end

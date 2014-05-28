@@ -69,7 +69,7 @@ cinch = Cinch::Bot.new do
     dblog(m,'join')
   end
 
-  on :part do |m|
+  on :leaving do |m|
     dblog(m,'quit')
   end
 
