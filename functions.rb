@@ -206,7 +206,7 @@ def seen(u, nick)
       u.reply "That's me!"
     elsif nick == u.user.nick
       u.reply "That's you!"
-    elsif !Log.where(chan: u.channel.to_s, user: nick.downcase).last.nil?
+    elsif !Log.where(chan: u.channel.to_s, user: nick.downcase).last.nil? or !Log.where(chan: 'ALL', user: nick.downcase).last.nil?
       q = Log.where(chan: u.channel.to_s, user: nick.downcase).last
       if Log.where(chan: 'ALL', user: nick.downcase).last.nil?
         u.reply "#{nick} was last seen #{q[:message]} #{time_diff((Time.now - Time.parse("#{q[:time]}")))} ago."
