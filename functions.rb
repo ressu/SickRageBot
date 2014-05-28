@@ -134,7 +134,7 @@ def mode(u)
   ActiveRecord::Base.connection_pool.with_connection do
     cmd = u.message.split(' ')[0]
     user = u.message.split(' ')[1]
-    q = Access.where(user: u.user.nick, chan: u.channel.to_s).last
+    q = Access.where(user: u.user.nick.to_s, chan: u.channel.to_s).last
 
     case
       when cmd == '!op'
@@ -179,8 +179,7 @@ end
 def autoop(u)
   ActiveRecord::Base.connection_pool.with_connection do
     unless u.user.nick == $nick
-      q = Access.where(user: u.user.nick, chan: u.channel.to_s).last
-
+      q = Access.where(user: u.user.nick.to_s, chan: u.channel.to_s).last
       if u.user.authed? and q[:roles].include?('o')
         Channel(u.channel).op(u.user.nick)
       elsif u.user.authed? and q[:roles].include?('v')
