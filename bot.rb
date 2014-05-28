@@ -65,7 +65,6 @@ cinch = Cinch::Bot.new do
   end
 
   on :join do |m|
-    autoop(m)
     dblog(m,'join')
   end
 

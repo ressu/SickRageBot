@@ -4,7 +4,6 @@ require 'cgi'
 require 'google_url_shortener'
 require 'json'
 require 'openssl'
-require 'time_diff'
 require_relative 'settings'
 require_relative 'db'
 
@@ -178,7 +177,7 @@ def dblog(u, a)
       Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "joining #{u.channel.to_s}", :time => Time.now.to_s)
     elsif a == 'quit'
       if u.channel.nil?
-        Log.create(:chan => 'ALL', :user => u.user.nick.downcase, :message => "quitting", :time => Time.now.to_s)
+        Log.create(:chan => 'ALL', :user => u.user.nick.downcase, :message => 'quitting', :time => Time.now.to_s)
       else
         Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "leaving #{u.channel.to_s}", :time => Time.now.to_s)
       end
@@ -186,6 +185,19 @@ def dblog(u, a)
       Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "saying \"#{u.message}\"", :time => Time.now.to_s)
     end
   end
+end
+
+def time_diff(t)
+  cute_date=Array.new
+  tables=[ ['day', 24*60*60], ['hour', 60*60], ['minute', 60], ['second', 1] ]
+
+  tables.each do |unit, value|
+    o = t.divmod(value)
+    p_unit = o[0] > 1 ? (unit + 's') : unit
+    cute_date.push("#{o[0]} #{p_unit}") unless o[0] == 0
+    t = o[1]
+  end
+  return cute_date.join(', ')
 end
 
 def seen(u, nick)
@@ -197,13 +209,13 @@ def seen(u, nick)
     elsif !Log.where(chan: u.channel.to_s, user: nick.downcase).last.nil?
       q = Log.where(chan: u.channel.to_s, user: nick.downcase).last
       if Log.where(chan: 'ALL', user: nick.downcase).last.nil?
-        u.reply "#{nick} was last seen #{q[:message]} #{Time.diff(Time.now,Time.parse("#{q[:time]}",'%d, %H, %N and %S'))} ago."
+        u.reply "#{nick} was last seen #{q[:message]} #{time_diff((Time.now - Time.parse("#{q[:time]}")))} ago."
       else
         q2 = Log.where(chan: 'ALL', user: nick.downcase).last
         if Time.parse("#{q2[:time]}") > Time.parse("#{q[:time]}")
-          u.reply "#{nick} was last seen #{q2[:message]} #{Time.diff(Time.now,Time.parse("#{q2[:time]}",'%d, %H, %N and %S'))} ago."
+          u.reply "#{nick} was last seen #{q2[:message]} #{time_diff((Time.now - Time.parse("#{q2[:time]}")))} ago."
         else
-          u.reply "#{nick} was last seen #{q[:message]} #{Time.diff(Time.now,Time.parse("#{q[:time]}",'%d, %H, %N and %S'))} ago."
+          u.reply "#{nick} was last seen #{q[:message]} #{time_diff((Time.now - Time.parse("#{q[:time]}")))} ago."
         end
       end
     else
@@ -221,3 +233,4 @@ def list(u)
   User(u.user.nick).send('!trakt <user>: Returns watched stats for the inputted user. Eg. !trakt senseye')
   User(u.user.nick).send('!seen <user>: the last message sent by inputted user as well as when it was sent. Eg. !seen tehspede')
 end
+
