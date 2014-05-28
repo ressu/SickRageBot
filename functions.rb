@@ -108,7 +108,7 @@ end
 def issues(n)
   url = 'https://sickrage.tv/forums/forum'
   enhancements = Nokogiri::XML(open(url)).css('td.topics-count')[1].text
-  issues = Nokogiri::XML(open(url)).css('td.topics-count')[4].text
+  issues = Nokogiri::XML(open(url)).css('td.topics-count')[5].text
 
   n.reply "ISSUES - #{issues} issues. :: #{enhancements} feature requests. :: URL: #{Google::UrlShortener::Url.new(:long_url => url).shorten!}"
 end
@@ -173,7 +173,8 @@ def mode(u)
     Channel(u.channel).kick(user, u.message.split(' ')[2]) if u.user.authed? and q[:roles].include?('k')
   end
 
-  Access.connection.close
+  ActiveRecord::Base.connection.close
+  ActiveRecord::Base.connection_pool.clear_stale_cached_connections!
 end
 
 def autoop(u)
@@ -186,7 +187,8 @@ def autoop(u)
       Channel(u.channel).voice(u.user.nick)
     end
 
-    Access.connection.close
+    ActiveRecord::Base.connection.close
+    ActiveRecord::Base.connection_pool.clear_stale_cached_connections!
   end
 end
 
@@ -244,24 +246,26 @@ def access(u)
 
     if cmd == 'add'
       Access.create(:chan => chan, :user => user, :roles => role)
-      Access.connection.close
+      ActiveRecord::Base.connection.close
       u.reply "Added #{user} as \"#{role}\" in #{chan}"
     elsif cmd == 'del'
       Access.where(user: user, chan: chan).destroy_all
-      Access.connection.close
+      ActiveRecord::Base.connection.close
       u.reply "Removed #{user} from #{chan}"
     elsif cmd == 'list'
       Access.where(chan: chan).each do |q|
         u.reply "#{q[:user]} :: Roles: #{q[:roles]}"
       end
-      Access.connection.close
+      ActiveRecord::Base.connection.close
     end
   end
+  ActiveRecord::Base.connection_pool.clear_stale_cached_connections!
 end
 
 def dblog(u)
   Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => u.message, :time => Time.now.to_s)
-  Log.connection.close
+  ActiveRecord::Base.connection.close
+  ActiveRecord::Base.connection_pool.clear_stale_cached_connections!
 end
 
 def seen(u, nick)
@@ -272,10 +276,11 @@ def seen(u, nick)
   elsif !Log.where(chan: u.channel.to_s, user: nick.downcase).last.nil?
     q = Log.where(chan: u.channel.to_s, user: nick.downcase).last
     u.reply "#{nick} was last seen saying \"#{q[:message]}\" #{(Time.now - Time.parse("#{q[:time]}")).duration} ago."
-    Log.connection.close
+    ActiveRecord::Base.connection.close
   else
     u.reply "I haven't seen #{nick}"
   end
+  ActiveRecord::Base.connection_pool.clear_stale_cached_connections!
 end
 
 def list(u)
