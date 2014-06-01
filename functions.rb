@@ -132,42 +132,32 @@ end
 
 def mode(u)
   cmd = u.message.split(' ')[0]
-  user = u.message.split(' ')[1]
+  if u.message.split(' ')[1].nil?
+    user = u.user.nick
+  else
+    user = u.message.split(' ')[1]
+  end
 
   case
     when cmd == '!op'
-      unless user.nil?
-        Channel(u.channel).op(user) if u.user.opped?
-      end
+      Channel(u.channel).op(user) if u.channel.opped?(u.user.nick)
     when cmd == '!voice'
-      if user.nil?
-        Channel(u.channel).voice(u.user.nick) if u.user.opped?
-      else
-        Channel(u.channel).voice(user) if u.user.opped?
-      end
+      Channel(u.channel).voice(user) if u.channel.opped?(u.user.nick)
     when cmd == '!devoice'
-      if user.nil?
-        Channel(u.channel).devoice(u.user.nick) if u.user.opped?
-      else
-        Channel(u.channel).devoice(user) if u.user.opped?
-      end
+      Channel(u.channel).devoice(user) if u.channel.opped?(u.user.nick)
     when cmd == '!deop'
-      if user.nil?
-        Channel(u.channel).deop(u.user.nick) if u.user.opped?
-      else
-        Channel(u.channel).deop(user) if u.user.opped?
-      end
+      Channel(u.channel).deop(user) if u.channel.opped?(u.user.nick)
     when cmd == '!kb'
-      if u.user.opped?
-        Channel(u.channel).ban("*!*@#{User(user).host}")
-        Channel(u.channel).kick(user, 'You have been banned.')
+      if u.channel.opped?(u.user.nick)
+        Channel(u.channel).ban("*!*@#{User(u.message.split(' ')[1]).host}")
+        Channel(u.channel).kick(u.message.split(' ')[1], 'You have been banned.')
       end
     when cmd == '!ban'
-      Channel(u.channel).ban("*!*@#{User(user).host}") if u.user.opped?
+      Channel(u.channel).ban("*!*@#{User(u.message.split(' ')[1]).host}") if u.channel.opped?(u.user.nick)
     when cmd == '!unban'
-      Channel(u.channel).unban("*!*@#{User(user).host}") if u.user.opped?
+      Channel(u.channel).unban("*!*@#{User(u.message.split(' ')[1]).host}") if u.channel.opped?(u.user.nick)
     when cmd == '!kick'
-      Channel(u.channel).kick(user, u.message.split(' ')[2]) if u.user.opped?
+      Channel(u.channel).kick(u.message.split(' ')[1], u.message.split(' ', 3)[2]) if u.channel.opped?(u.user.nick)
   end
 end
 
@@ -202,16 +192,16 @@ end
 
 def seen(u, nick)
   ActiveRecord::Base.connection_pool.with_connection do
+    q = Log.where(chan: u.channel.to_s, user: nick.downcase).last
+    q2 = Log.where(chan: 'ALL', user: nick.downcase).last
     if nick == bot.nick
       u.reply "That's me!"
     elsif nick == u.user.nick
       u.reply "That's you!"
-    elsif !Log.where(chan: u.channel.to_s, user: nick.downcase).last.nil? or !Log.where(chan: 'ALL', user: nick.downcase).last.nil?
-      q = Log.where(chan: u.channel.to_s, user: nick.downcase).last
-      if Log.where(chan: 'ALL', user: nick.downcase).last.nil?
+    elsif !q.nil? or !q2.last.nil?
+      if q2.nil?
         u.reply "#{nick} was last seen #{q[:message]} #{time_diff((Time.now - Time.parse("#{q[:time]}")))} ago."
       else
-        q2 = Log.where(chan: 'ALL', user: nick.downcase).last
         if Time.parse("#{q2[:time]}") > Time.parse("#{q[:time]}")
           u.reply "#{nick} was last seen #{q2[:message]} #{time_diff((Time.now - Time.parse("#{q2[:time]}")))} ago."
         else
