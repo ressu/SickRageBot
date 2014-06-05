@@ -130,6 +130,18 @@ def trakt(u)
     u.reply "TRAKT - #{u.message.split(' ', 2)[1]} does not exist."
 end
 
+def weather(c)
+  url = Nokogiri::XML(open("http://api.openweathermap.org/data/2.5/weather?q=#{CGI.escape(c.message.split(' ',2)[1])}&mode=xml&units=metric"))
+  city = url.xpath('//city/@name')
+  country = url.xpath('//city/country').text
+  temp = url.xpath('//temperature/@value')
+  max = url.xpath('//temperature/@max')
+  min = url.xpath('//temperature/@min')
+  weather = url.xpath('//weather/@value')
+
+  c.reply "WEATHER - #{city}, #{country} :: Current #{temp}C, #{weather} :: Max: #{max}C Min: #{min}C"
+end
+
 def mode(u)
   cmd = u.message.split(' ')[0]
   if u.message.split(' ')[1].nil?
