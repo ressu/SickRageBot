@@ -202,6 +202,12 @@ def dblog(u, a)
       end
     elsif a == 'say'
       Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "saying \"#{u.message}\"", :time => Time.now.to_s)
+      unless Message.where(who: u.user.nick.downcase, chan: u.channel.to_s).last.nil?
+        Message.where(who: u.user.nick.downcase, chan: u.channel.to_s).each do |q|
+          u.reply "MESSAGE - To: #{q[:who]} :: From: #{q[:from]} :: Message: '#{q[:what]}'"
+          Message.where(who: u.user.nick.downcase, chan: u.channel.to_s).delete_all
+        end
+      end
     end
   end
 end
@@ -257,3 +263,14 @@ def list(u)
   end
 end
 
+def tell(u)
+  ActiveRecord::Base.connection_pool.with_connection do
+    who = u.message.split(" ",3)[1].downcase
+    what = u.message.split(" ",3)[2]
+    from = u.user.nick
+    unless who.nil? or what.nil? or from.nil?
+      Message.create(:who => who, :what => what, :from => from, :chan => u.channel.to_s)
+      u.reply 'Will do!'
+    end
+  end
+end

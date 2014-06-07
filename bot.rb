@@ -76,12 +76,16 @@ cinch = Cinch::Bot.new do
     dblog(m,'say')
   end
 
-  on :message, /^!seen (.+)/ do |m, nick|
+  on :message, /^!seen (.+)/i do |m, nick|
     seen(m, nick)
   end
 
-  on :message, /^!weather/ do |m|
+  on :message, /^!weather/i do |m|
     weather(m)
+  end
+
+  on :message, /^!tell (.+)/i do |m|
+    tell(m)
   end
 end
 

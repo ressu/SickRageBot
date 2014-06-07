@@ -22,6 +22,12 @@ unless File.exist?('irc.db')
       table.column :user, :string
       table.column :location, :string
     end
+    create_table :messages do |table|
+      table.column :who, :string
+      table.column :what, :string
+      table.column :from, :string
+      table.column :chan, :string
+    end
   end
 end
 
@@ -32,4 +38,7 @@ class Command < ActiveRecord::Base
 end
 
 class Location < ActiveRecord::Base
+end
+
+class Message < ActiveRecord::Base
 end
