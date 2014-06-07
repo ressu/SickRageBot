@@ -131,15 +131,32 @@ def trakt(u)
 end
 
 def weather(c)
-  url = Nokogiri::XML(open("http://api.openweathermap.org/data/2.5/weather?q=#{CGI.escape(c.message.split(' ',2)[1])}&mode=xml&units=metric"))
-  city = url.xpath('//city/@name')
-  country = url.xpath('//city/country').text
-  temp = url.xpath('//temperature/@value')
-  max = url.xpath('//temperature/@max')
-  min = url.xpath('//temperature/@min')
-  weather = url.xpath('//weather/@value')
+  if c.message.split(' ',2)[1].nil?
+    ActiveRecord::Base.connection_pool.with_connection do
+      q = Location.where(user: c.user.nick.downcase).last
+      @url = "http://api.openweathermap.org/data/2.5/weather?q=#{CGI.escape(q[:location])}&mode=xml&units=metric"
+      @json = "http://api.openweathermap.org/data/2.5/weather?q=#{CGI.escape(q[:location])}&units=metric"
+    end
+  else
+    @url = "http://api.openweathermap.org/data/2.5/weather?q=#{CGI.escape(c.message.split(' ',2)[1])}&mode=xml&units=metric"
+    @json = "http://api.openweathermap.org/data/2.5/weather?q=#{CGI.escape(c.message.split(' ',2)[1])}&units=metric"
+    ActiveRecord::Base.connection_pool.with_connection do
+      Location.create(:user => c.user.nick.downcase, :location => c.message.split(' ',2)[1])
+    end
+  end
 
-  c.reply "WEATHER - #{city}, #{country} :: Current #{temp}C, #{weather} :: Max: #{max}C Min: #{min}C"
+  if JSON.load(open(@json))['message'] == 'Error: Not found city'
+    c.reply "WEATHER - No results"
+  else
+    ng = Nokogiri::XML(open(@url))
+    city = ng.xpath('//city/@name')
+    country = ng.xpath('//city/country').text
+    temp = ng.xpath('//temperature/@value')
+    max = ng.xpath('//temperature/@max')
+    min = ng.xpath('//temperature/@min')
+    weather = ng.xpath('//weather/@value')
+    c.reply "WEATHER - #{city}, #{country} :: Current #{temp}C, #{weather} :: Max: #{max}C - Min: #{min}C"
+  end
 end
 
 def mode(u)
@@ -227,12 +244,16 @@ def seen(u, nick)
 end
 
 def list(u)
-  User(u.user.nick).send('!tvdb <name of show>: Searches TVDB for specified show. Eg. !tvdb the simpsons')
-  User(u.user.nick).send('!tvrage <name of show>: Searches TVRAGE for specified show. Eg. !tvrage the simpsons')
-  User(u.user.nick).send('!tv <name of show>: Searches both TVDB and TVRAGE for specified show. Eg. !tv the simpsons')
-  User(u.user.nick).send('!movie <name of movie>: Searches IMDB and RT for a specified movie. Eg. !movie spiderman')
-  User(u.user.nick).send('!issues: Reports amount of open issues and unverified bugs.')
-  User(u.user.nick).send('!trakt <user>: Returns watched stats for the inputted user. Eg. !trakt senseye')
-  User(u.user.nick).send('!seen <user>: the last message sent by inputted user as well as when it was sent. Eg. !seen tehspede')
+  if u.message.split(" ",3)[1] == 'add' and u.user.nick == $admin
+    ActiveRecord::Base.connection_pool.with_connection do
+      Command.create(:command => u.message.split(" ",3)[2])
+    end
+  else
+    ActiveRecord::Base.connection_pool.with_connection do
+      Command.all.each do |x|
+        User(u.user.nick).send(x[:command])
+      end
+    end
+  end
 end
 

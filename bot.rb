@@ -80,7 +80,7 @@ cinch = Cinch::Bot.new do
     seen(m, nick)
   end
 
-  on :message, /^!weather (.+)/ do |m|
+  on :message, /^!weather/ do |m|
     weather(m)
   end
 end

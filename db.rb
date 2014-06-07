@@ -18,6 +18,10 @@ unless File.exist?('irc.db')
     create_table :commands do |table|
       table.column :command, :string
     end
+    create_table :locations do |table|
+      table.column :user, :string
+      table.column :location, :string
+    end
   end
 end
 
@@ -25,4 +29,7 @@ class Log < ActiveRecord::Base
 end
 
 class Command < ActiveRecord::Base
+end
+
+class Location < ActiveRecord::Base
 end
