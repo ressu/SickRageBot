@@ -141,6 +141,7 @@ def weather(c)
     @url = "http://api.openweathermap.org/data/2.5/weather?q=#{CGI.escape(c.message.split(' ',2)[1])}&mode=xml&units=metric"
     @json = "http://api.openweathermap.org/data/2.5/weather?q=#{CGI.escape(c.message.split(' ',2)[1])}&units=metric"
     ActiveRecord::Base.connection_pool.with_connection do
+      Location.where(user: c.user.nick.downcase).delete_all
       Location.create(:user => c.user.nick.downcase, :location => c.message.split(' ',2)[1])
     end
   end
