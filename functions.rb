@@ -204,7 +204,7 @@ def dblog(u, a)
       Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "saying \"#{u.message}\"", :time => Time.now.to_s)
       unless Message.where(who: u.user.nick.downcase, chan: u.channel.to_s).last.nil?
         Message.where(who: u.user.nick.downcase, chan: u.channel.to_s).each do |q|
-          u.reply "MESSAGE - To: #{q[:who]} :: From: #{q[:from]} :: Message: '#{q[:what]}'"
+          u.reply "MESSAGE - To: #{u.user.nick} :: From: #{q[:from]} :: Message: '#{q[:what]}'"
           Message.where(who: u.user.nick.downcase, chan: u.channel.to_s).delete_all
         end
       end
