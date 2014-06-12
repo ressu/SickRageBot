@@ -26,7 +26,6 @@ unless File.exist?('irc.db')
       table.column :who, :string
       table.column :what, :string
       table.column :from, :string
-      table.column :chan, :string
     end
   end
 end

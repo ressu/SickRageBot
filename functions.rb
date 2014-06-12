@@ -203,10 +203,10 @@ def dblog(u, a)
       end
     elsif a == 'say'
       Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "saying \"#{u.message}\"", :time => Time.now.to_s)
-      unless Message.where(who: u.user.nick.downcase, chan: u.channel.to_s).last.nil?
-        Message.where(who: u.user.nick.downcase, chan: u.channel.to_s).each do |q|
-          u.reply "MESSAGE - To: #{u.user.nick} :: From: #{q[:from]} :: Message: '#{q[:what]}'"
-          Message.where(who: u.user.nick.downcase, chan: u.channel.to_s).delete_all
+      unless Message.where(who: u.user.nick.downcase).last.nil?
+        Message.where(who: u.user.nick.downcase).each do |q|
+          User(q[:who]).send "MESSAGE - From: #{q[:from]} :: Message: '#{q[:what]}'"
+          Message.where(who: u.user.nick.downcase).delete_all
         end
       end
     end
@@ -266,11 +266,11 @@ end
 
 def tell(u)
   ActiveRecord::Base.connection_pool.with_connection do
-    who = u.message.split(" ",3)[1].downcase
-    what = u.message.split(" ",3)[2]
+    who = u.message.split(' ',3)[1].downcase
+    what = u.message.split(' ',3)[2]
     from = u.user.nick
     unless who.nil? or what.nil? or from.nil?
-      Message.create(:who => who, :what => what, :from => from, :chan => u.channel.to_s)
+      Message.create(:who => who, :what => what, :from => from)
       u.reply 'Will do!'
     end
   end

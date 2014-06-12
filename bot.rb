@@ -87,6 +87,12 @@ cinch = Cinch::Bot.new do
   on :message, /^!tell (.+)/i do |m|
     tell(m)
   end
+
+  on :message, /^!quit/i do |m|
+    if m.user.nick == $admin and m.user.authed?
+      cinch.quit(m.message.split(" ",2)[1])
+    end
+  end
 end
 
 cinch.start
