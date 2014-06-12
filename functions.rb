@@ -206,6 +206,7 @@ def dblog(u, a)
       unless Message.where(who: u.user.nick.downcase).last.nil?
         Message.where(who: u.user.nick.downcase).each do |q|
           User(q[:who]).send "MESSAGE - From: #{q[:from]} :: Message: '#{q[:what]}'"
+          User(q[:from]).send "MESSAGE - [SENT] To: #{q[:who]} :: Message: '#{q[:what]}'"
           Message.where(who: u.user.nick.downcase).delete_all
         end
       end
