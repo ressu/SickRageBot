@@ -22,6 +22,7 @@ cinch = Cinch::Bot.new do
         :type     => :nickserv,
     }
   end
+  uptime = Time.now
 
   on :message, /^!tvdb (.+)/i do |m|
     tv(m, 'tvdb')
@@ -96,6 +97,10 @@ cinch = Cinch::Bot.new do
 
   on :message, /^!latest/i do |m|
     latest(m)
+  end
+
+  on :message, /^!uptime/i do |m|
+    ut(m, uptime)
   end
 end
 

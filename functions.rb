@@ -11,6 +11,8 @@ require_relative 'db'
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 Google::UrlShortener::Base.api_key = $googleapikey
 
+
+
 def nexta(xml, source)
   if source == 'tvrage'
     s = { :aired => 'Season > episode > airdate',
@@ -311,4 +313,8 @@ def latest(b)
 
     b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
   end
+end
+
+def ut(m, uptime)
+  m.reply "Uptime: #{time_diff(Time.now - uptime)}"
 end
