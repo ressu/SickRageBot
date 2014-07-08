@@ -93,6 +93,10 @@ cinch = Cinch::Bot.new do
       cinch.quit(m.message.split(" ",2)[1])
     end
   end
+
+  on :message, /^!latest/i do |m|
+    latest(m)
+  end
 end
 
 cinch.start

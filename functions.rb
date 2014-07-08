@@ -4,6 +4,7 @@ require 'cgi'
 require 'google_url_shortener'
 require 'json'
 require 'openssl'
+require 'github_api'
 require_relative 'settings'
 require_relative 'db'
 
@@ -274,5 +275,40 @@ def tell(u)
       Message.create(:who => who, :what => what, :from => from)
       u.reply 'Will do!'
     end
+  end
+end
+
+def latest(b)
+  dev = Github::Repos.new.branch('echel0n','SickRage','dev')['commit']['commit']
+  master = Github::Repos.new.branch('echel0n','SickRage','master')['commit']['commit']
+  if b.message.split(' ',2)[1].nil?
+    dname = dev['author']['name']
+    dcommit = dev['url'].split("/")[8][0..7]
+    dmsg = dev['message'].gsub("\n\n"," ")
+    durl = Google::UrlShortener::Url.new(:long_url => dev['url']).shorten!
+    dbranch = 'dev'
+    name = master['author']['name']
+    commit = master['url'].split("/")[8][0..7]
+    msg = master['message'].gsub("\n\n"," ")
+    url = Google::UrlShortener::Url.new(:long_url => master['url']).shorten!
+    branch = 'master'
+    b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
+    b.reply "The latest commit in #{dbranch}: #{dname}, #{dcommit}, #{dmsg}, #{durl}"
+  elsif b.message.split(' ',2)[1].downcase == 'dev'
+    name = dev['author']['name']
+    commit = dev['url'].split("/")[8][0..7]
+    msg = dev['message'].gsub("\n\n"," ")
+    url = Google::UrlShortener::Url.new(:long_url => dev['url']).shorten!
+    branch = 'dev'
+
+    b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
+  elsif b.message.split(' ',2)[1].downcase == 'master'
+    name = master['author']['name']
+    commit = master['url'].split("/")[8][0..7]
+    msg = master['message'].gsub("\n\n"," ")
+    url = Google::UrlShortener::Url.new(:long_url => master['url']).shorten!
+    branch = 'master'
+
+    b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
   end
 end

@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-gem 'octokit'
+gem 'github_api'
 gem 'nokogiri'
 gem 'sinatra'
 gem 'thin'
