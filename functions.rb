@@ -287,12 +287,12 @@ def latest(b)
     dname = dev['author']['name']
     dcommit = dev['url'].split("/")[8][0..7]
     dmsg = dev['message'].gsub("\n\n"," ")
-    durl = Google::UrlShortener::Url.new(:long_url => dev['url']).shorten!
+    durl = Google::UrlShortener::Url.new(:long_url => "https://github.com/echel0n/SickRage/commit/#{dev['url'].split("/")[8]}").shorten!
     dbranch = 'dev'
     name = master['author']['name']
     commit = master['url'].split("/")[8][0..7]
     msg = master['message'].gsub("\n\n"," ")
-    url = Google::UrlShortener::Url.new(:long_url => master['url']).shorten!
+    url = Google::UrlShortener::Url.new(:long_url => "https://github.com/echel0n/SickRage/commit/#{master['url'].split("/")[8]}").shorten!
     branch = 'master'
     b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
     b.reply "The latest commit in #{dbranch}: #{dname}, #{dcommit}, #{dmsg}, #{durl}"
@@ -300,7 +300,7 @@ def latest(b)
     name = dev['author']['name']
     commit = dev['url'].split("/")[8][0..7]
     msg = dev['message'].gsub("\n\n"," ")
-    url = Google::UrlShortener::Url.new(:long_url => dev['url']).shorten!
+    url = Google::UrlShortener::Url.new(:long_url => "https://github.com/echel0n/SickRage/commit/#{dev['url'].split("/")[8]}").shorten!
     branch = 'dev'
 
     b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
@@ -308,7 +308,7 @@ def latest(b)
     name = master['author']['name']
     commit = master['url'].split("/")[8][0..7]
     msg = master['message'].gsub("\n\n"," ")
-    url = Google::UrlShortener::Url.new(:long_url => master['url']).shorten!
+    url = Google::UrlShortener::Url.new(:long_url => "https://github.com/echel0n/SickRage/commit/#{master['url'].split("/")[8]}").shorten!
     branch = 'master'
 
     b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
