@@ -1,5 +1,6 @@
 require 'cinch'
 require 'cinch/plugins/identify'
+require 'github_api'
 require_relative 'functions'
 require_relative 'settings'
 require_relative 'github_commits'
@@ -101,6 +102,12 @@ cinch = Cinch::Bot.new do
 
   on :message, /^!uptime/i do |m|
     ut(m, uptime)
+  end
+
+  on :message, /^!commit/i do |m|
+    commithash = m.message.split(' ',2)[1]
+    github = Github::Repos.new.commits.get('echel0n','SickRage',commithash)['commit']
+    m.reply "Commit '#{commithash}' :: #{github['message']} :: #{github['author']['date'].gsub('Z', ' ').gsub('T', ' ')}"
   end
 end
 

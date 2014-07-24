@@ -206,10 +206,10 @@ def dblog(u, a)
       end
     elsif a == 'say'
       Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "saying \"#{u.message}\"", :time => Time.now.to_s)
-      unless Message.where(who: u.user.nick.downcase).last.nil?
+      unless Message.where(who: u.user.nick.downcase).last.nil? or !u.user.authed?
         Message.where(who: u.user.nick.downcase).each do |q|
           User(q[:who]).send "MESSAGE - From: #{q[:from]} :: Message: '#{q[:what]}'"
-          User(q[:from]).send "MESSAGE - [SENT] To: #{q[:who]} :: Message: '#{q[:what]}'"
+          User(q[:from]).send "MESSAGE - [SENT] To: #{q[:who]} :: Message: '#{q[:what]} :: '"
           Message.where(who: u.user.nick.downcase).delete_all
         end
       end
@@ -274,7 +274,7 @@ def tell(u)
     what = u.message.split(' ',3)[2]
     from = u.user.nick
     unless who.nil? or what.nil? or from.nil?
-      Message.create(:who => who, :what => what, :from => from)
+      Message.create(:who => who, :what => what, :from => from, :time => Time.now.to_s)
       u.reply 'Will do!'
     end
   end
