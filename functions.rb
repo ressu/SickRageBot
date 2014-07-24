@@ -283,6 +283,7 @@ end
 def latest(b)
   dev = Github::Repos.new.branch('echel0n','SickRage','dev')['commit']['commit']
   master = Github::Repos.new.branch('echel0n','SickRage','master')['commit']['commit']
+  nightly = Github::Repos.new.branch('echel0n','SickRage','nightly')['commit']['commit']
   if b.message.split(' ',2)[1].nil?
     dname = dev['author']['name']
     dcommit = dev['url'].split("/")[8][0..7]
@@ -294,8 +295,14 @@ def latest(b)
     msg = master['message'].gsub("\n\n"," ")
     url = Google::UrlShortener::Url.new(:long_url => "https://github.com/echel0n/SickRage/commit/#{master['url'].split("/")[8]}").shorten!
     branch = 'master'
+    nname = nightly['author']['name']
+    ncommit = nightly['url'].split("/")[8][0..7]
+    nmsg = nightly['message'].gsub("\n\n"," ")
+    nurl = Google::UrlShortener::Url.new(:long_url => "https://github.com/echel0n/SickRage/commit/#{nightly['url'].split("/")[8]}").shorten!
+    nbranch = 'nightly'
     b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
     b.reply "The latest commit in #{dbranch}: #{dname}, #{dcommit}, #{dmsg}, #{durl}"
+    b.reply "The latest commit in #{nbranch}: #{nname}, #{ncommit}, #{nmsg}, #{nurl}"
   elsif b.message.split(' ',2)[1].downcase == 'dev'
     name = dev['author']['name']
     commit = dev['url'].split("/")[8][0..7]
@@ -310,6 +317,14 @@ def latest(b)
     msg = master['message'].gsub("\n\n"," ")
     url = Google::UrlShortener::Url.new(:long_url => "https://github.com/echel0n/SickRage/commit/#{master['url'].split("/")[8]}").shorten!
     branch = 'master'
+
+    b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
+  elsif b.message.split(' ',2)[1].downcase == 'nightly'
+    name = nightly['author']['name']
+    commit = nightly['url'].split("/")[8][0..7]
+    msg = nightly['message'].gsub("\n\n"," ")
+    url = Google::UrlShortener::Url.new(:long_url => "https://github.com/echel0n/SickRage/commit/#{nightly['url'].split("/")[8]}").shorten!
+    branch = 'nightly'
 
     b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
   end
