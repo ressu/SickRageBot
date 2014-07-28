@@ -47,9 +47,6 @@ module SickRageBot
         @tvstatus ||= show.css(status).text
       end
 
-      def link
-      end
-
       def source
         self.class.to_s.split('::')[-1].upcase
       end
