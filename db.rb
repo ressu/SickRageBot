@@ -2,9 +2,9 @@ require 'active_record'
 require 'sqlite3'
 
 ActiveRecord::Base.establish_connection(
-    :adapter => 'sqlite3',
-    :database => 'irc.db',
-    :pool => 100
+    adapter: 'sqlite3',
+    database: 'irc.db',
+    pool: 100
 )
 
 unless File.exist?('irc.db')

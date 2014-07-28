@@ -15,12 +15,12 @@ cinch = Cinch::Bot.new do
     config.user = 'SickRage'
     config.plugins.plugins = [Cinch::Plugins::Identify, Cinch::HttpServer, Cinch::GithubCommits]
     config.plugins.options[Cinch::HttpServer] = {
-     :host => '0.0.0.0',
-     :port => 1234
+     host: '0.0.0.0',
+     port: 1234
     }
     config.plugins.options[Cinch::Plugins::Identify] = {
-        :password => $nspass,
-        :type     => :nickserv,
+        password: $nspass,
+        type: :nickserv,
     }
   end
   uptime = Time.now
@@ -52,10 +52,6 @@ cinch = Cinch::Bot.new do
 
   on :message, /^!trakt/i do |m|
     trakt(m)
-  end
-
-  on :message, /^!access/i do |m|
-    access(m)
   end
 
   on :message, /(.+)ACTION slaps #{$nick}/i do |m|
@@ -97,7 +93,13 @@ cinch = Cinch::Bot.new do
   end
 
   on :message, /^!latest/i do |m|
-    latest(m)
+    if m.message.split(' ',2)[1].nil?
+      latest(m, 'master')
+      latest(m, 'dev')
+      latest(m, 'nightly')
+    else
+      latest(m, m.message.split(' ',2)[1])
+    end
   end
 
   on :message, /^!uptime/i do |m|
