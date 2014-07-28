@@ -1,3 +1,4 @@
+require 'bundler/setup'
 require 'cinch'
 require 'cinch/plugins/identify'
 require 'github_api'

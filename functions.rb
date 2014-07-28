@@ -5,6 +5,7 @@ require 'google_url_shortener'
 require 'json'
 require 'openssl'
 require 'github_api'
+require 'sick_rage_bot/tv'
 require_relative 'settings'
 require_relative 'db'
 
@@ -12,35 +13,6 @@ OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 Google::UrlShortener::Base.api_key = $googleapikey
 
 
-
-def nexta(xml, source)
-  if source == 'tvrage'
-    s = { :aired => 'Season > episode > airdate',
-          :day => 'airday',
-          :time => 'airtime' }
-  else
-    s = { :aired => 'Episode > FirstAired',
-          :day => 'Airs_DayOfWeek',
-          :time => 'Airs_Time' }
-  end
-  xml.search(':empty').remove
-  split = xml.css(s[:aired]).last.text.split('-')
-  if Date.valid_date?(split[0].to_i, split[1].to_i, split[2].to_i) == true and Date.parse(xml.css(s[:aired]).last.text) < Date.today
-    return 'No data.'
-  end
-  xml.css(s[:aired]).each do |x|
-    var = x.text.split('-')
-    if Date.valid_date?(var[0].to_i, var[1].to_i, var[2].to_i) == true and Date.parse(x.text) >= Date.today
-      if (Date.parse(x.text) - Date.today).to_i == 1
-        return "#{x.text} #{xml.css(s[:day]).text} #{xml.css(s[:time]).text} (#{(Date.parse(x.text) - Date.today).to_i} day left)"
-      elsif (Date.parse(x.text) - Date.today).to_i == 0
-        return "#{x.text} #{xml.css(s[:day]).text} #{xml.css(s[:time]).text} (Today)"
-      else
-        return "#{x.text} #{xml.css(s[:day]).text} #{xml.css(s[:time]).text} (#{(Date.parse(x.text) - Date.today).to_i} days left)"
-      end
-    end
-  end
-end
 
 def tv(n, source)
   SickRageBot::Tv.new(n, source)
