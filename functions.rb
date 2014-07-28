@@ -13,7 +13,6 @@ OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 Google::UrlShortener::Base.api_key = $googleapikey
 
 
-
 def tv(n, source)
   SickRageBot::Tv.new(n, source)
 end
@@ -22,7 +21,7 @@ def movie(n)
   search = Nokogiri::XML(open("http://www.imdb.com/find?s=tt&ttype=ft&ref_=fn_ft&q=#{CGI.escape(n.message.split(' ', 2)[1])}"))
   imdbid = search.css('table.findList > tr > td.primary_photo > a')[0]['href'].split('/')[2].split('tt')[1]
   imdburl = "http://www.imdb.com/title/tt#{imdbid}"
-  url = Google::UrlShortener::Url.new(:long_url => imdburl)
+  url = Google::UrlShortener::Url.new(long_url: imdburl)
   movie = Nokogiri::XML(open(imdburl))
   title = movie.css('title').text.split(' -')[0]
   rating = movie.css('div.star-box-giga-star')[0].text
@@ -49,7 +48,7 @@ def issues(n)
   enhancements = Nokogiri::XML(open(url)).css('td.topics-count')[1].text
   issues = Nokogiri::XML(open(url)).css('td.topics-count')[5].text
 
-  n.reply "ISSUES - #{issues} issues. :: #{enhancements} feature requests. :: URL: #{Google::UrlShortener::Url.new(:long_url => url).shorten!}"
+  n.reply "ISSUES - #{issues} issues. :: #{enhancements} feature requests. :: URL: #{Google::UrlShortener::Url.new(long_url: url).shorten!}"
 end
 
 def trakt(u)
@@ -81,7 +80,7 @@ def weather(c)
     @json = "http://api.openweathermap.org/data/2.5/weather?q=#{CGI.escape(c.message.split(' ',2)[1])}&units=metric"
     ActiveRecord::Base.connection_pool.with_connection do
       Location.where(user: c.user.nick.downcase).delete_all
-      Location.create(:user => c.user.nick.downcase, :location => c.message.split(' ',2)[1])
+      Location.create(user: c.user.nick.downcase, location: c.message.split(' ',2)[1])
     end
   end
 
@@ -133,19 +132,19 @@ end
 def dblog(u, a)
   ActiveRecord::Base.connection_pool.with_connection do
     if a == 'join'
-      Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "joining #{u.channel.to_s}", :time => Time.now.to_s)
+      Log.create(chan: u.channel.to_s, user: u.user.nick.downcase, message: "joining #{u.channel.to_s}", time: Time.now.to_s)
     elsif a == 'quit'
       if u.channel.nil?
-        Log.create(:chan => 'ALL', :user => u.user.nick.downcase, :message => 'quitting', :time => Time.now.to_s)
+        Log.create(chan: 'ALL', user: u.user.nick.downcase, message: 'quitting', time: Time.now.to_s)
       else
-        Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "leaving #{u.channel.to_s}", :time => Time.now.to_s)
+        Log.create(chan: u.channel.to_s, user: u.user.nick.downcase, message: "leaving #{u.channel.to_s}", time: Time.now.to_s)
       end
     elsif a == 'say'
-      Log.create(:chan => u.channel.to_s, :user => u.user.nick.downcase, :message => "saying \"#{u.message}\"", :time => Time.now.to_s)
+      Log.create(chan: u.channel.to_s, user: u.user.nick.downcase, message: "saying \"#{u.message}\"", time: Time.now.to_s)
       unless Message.where(who: u.user.nick.downcase).last.nil? or !u.user.authed?
         Message.where(who: u.user.nick.downcase).each do |q|
           User(q[:who]).send "MESSAGE - From: #{q[:from]} :: Message: '#{q[:what]}'"
-          User(q[:from]).send "MESSAGE - [SENT] To: #{q[:who]} :: Message: '#{q[:what]} :: '"
+          User(q[:from]).send "MESSAGE - [SENT] To: #{q[:who]} :: Message: '#{q[:what]}' :: Command was used at #{DateTime.parse(q[:time]).strftime('%d %b %Y %H:%M')}'"
           Message.where(who: u.user.nick.downcase).delete_all
         end
       end
@@ -193,7 +192,7 @@ end
 def list(u)
   if u.message.split(" ",3)[1] == 'add' and u.user.nick == $admin
     ActiveRecord::Base.connection_pool.with_connection do
-      Command.create(:command => u.message.split(" ",3)[2])
+      Command.create(command: u.message.split(" ",3)[2])
     end
   else
     ActiveRecord::Base.connection_pool.with_connection do
@@ -210,62 +209,25 @@ def tell(u)
     what = u.message.split(' ',3)[2]
     from = u.user.nick
     unless who.nil? or what.nil? or from.nil?
-      Message.create(:who => who, :what => what, :from => from, :time => Time.now.to_s)
+      Message.create(who: who, what: what, from: from, time: DateTime.now.to_s)
       u.reply 'Will do!'
     end
-  end
-end
-
-def latest(b)
-  dev = Github::Repos.new.branch('echel0n','SickRage','dev')['commit']['commit']
-  master = Github::Repos.new.branch('echel0n','SickRage','master')['commit']['commit']
-  nightly = Github::Repos.new.branch('echel0n','SickRage','nightly')['commit']['commit']
-  if b.message.split(' ',2)[1].nil?
-    dname = dev['author']['name']
-    dcommit = dev['url'].split("/")[8][0..7]
-    dmsg = dev['message'].gsub("\n\n"," ")
-    durl = Google::UrlShortener::Url.new(:long_url => "https://github.com/echel0n/SickRage/commit/#{dev['url'].split("/")[8]}").shorten!
-    dbranch = 'dev'
-    name = master['author']['name']
-    commit = master['url'].split("/")[8][0..7]
-    msg = master['message'].gsub("\n\n"," ")
-    url = Google::UrlShortener::Url.new(:long_url => "https://github.com/echel0n/SickRage/commit/#{master['url'].split("/")[8]}").shorten!
-    branch = 'master'
-    nname = nightly['author']['name']
-    ncommit = nightly['url'].split("/")[8][0..7]
-    nmsg = nightly['message'].gsub("\n\n"," ")
-    nurl = Google::UrlShortener::Url.new(:long_url => "https://github.com/echel0n/SickRage/commit/#{nightly['url'].split("/")[8]}").shorten!
-    nbranch = 'nightly'
-    b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
-    b.reply "The latest commit in #{dbranch}: #{dname}, #{dcommit}, #{dmsg}, #{durl}"
-    b.reply "The latest commit in #{nbranch}: #{nname}, #{ncommit}, #{nmsg}, #{nurl}"
-  elsif b.message.split(' ',2)[1].downcase == 'dev'
-    name = dev['author']['name']
-    commit = dev['url'].split("/")[8][0..7]
-    msg = dev['message'].gsub("\n\n"," ")
-    url = Google::UrlShortener::Url.new(:long_url => "https://github.com/echel0n/SickRage/commit/#{dev['url'].split("/")[8]}").shorten!
-    branch = 'dev'
-
-    b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
-  elsif b.message.split(' ',2)[1].downcase == 'master'
-    name = master['author']['name']
-    commit = master['url'].split("/")[8][0..7]
-    msg = master['message'].gsub("\n\n"," ")
-    url = Google::UrlShortener::Url.new(:long_url => "https://github.com/echel0n/SickRage/commit/#{master['url'].split("/")[8]}").shorten!
-    branch = 'master'
-
-    b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
-  elsif b.message.split(' ',2)[1].downcase == 'nightly'
-    name = nightly['author']['name']
-    commit = nightly['url'].split("/")[8][0..7]
-    msg = nightly['message'].gsub("\n\n"," ")
-    url = Google::UrlShortener::Url.new(:long_url => "https://github.com/echel0n/SickRage/commit/#{nightly['url'].split("/")[8]}").shorten!
-    branch = 'nightly'
-
-    b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
   end
 end
 
 def ut(m, uptime)
   m.reply "Uptime: #{time_diff(Time.now - uptime)}"
 end
+<<<<<<< HEAD
+=======
+
+def latest(b, branch)
+  gh = Github::Repos.new.branch('echel0n','SickRage',branch)['commit']['commit']
+  name = gh['author']['name']
+  commit = gh['url'].split("/")[8][0..7]
+  msg = gh['message'].gsub("\n\n"," ")
+  url = Google::UrlShortener::Url.new(long_url: "https://github.com/echel0n/SickRage/commit/#{gh['url'].split("/")[8]}").shorten!
+
+  b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
+end
+>>>>>>> origin/master

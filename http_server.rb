@@ -155,8 +155,8 @@ class Cinch::HttpServer
   end
 
   include Cinch::Plugin
-  listen_to :connect,    :method => :start_http_server
-  listen_to :disconnect, :method => :stop_http_server
+  listen_to :connect,    method: :start_http_server
+  listen_to :disconnect, method: :stop_http_server
 
   def start_http_server(msg)
     host    = config[:host]    || 'localhost'

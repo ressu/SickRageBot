@@ -55,7 +55,7 @@ class Cinch::GithubCommits
       author = info['commits'].last['author']['username']
       oid = info['commits'].last['id'][0..7]
       desc = info['commits'].last['message']
-      url = Google::UrlShortener::Url.new(:long_url => info['compare'])
+      url = Google::UrlShortener::Url.new(long_url: info['compare'])
 
       if info['commits'].count > 1
         bot.channels.each{|c| c.send("[COMMIT][#{info['ref'].split('/')[2]}] #{author} commited #{info['commits'].count} new commit(s). The latest one, \"#{oid}: #{desc.lines.first.chomp}\". URL: #{url.shorten!}")}
@@ -68,21 +68,21 @@ class Cinch::GithubCommits
       if info['action'] == 'opened'
         user = info['sender']['login']
         title = info['issue']['title']
-        url = Google::UrlShortener::Url.new(:long_url => info['issue']['html_url'])
+        url = Google::UrlShortener::Url.new(long_url: info['issue']['html_url'])
 
         bot.channels.each{|c| c.send("[ISSUE][##{info['issue']['number']}] #{user} opened a new issue: \"#{title}\" URL: #{url.shorten!}")}
       end
       if info['action'] == 'closed'
         user = info['sender']['login']
         title = info['issue']['title']
-        url = Google::UrlShortener::Url.new(:long_url => info['issue']['html_url'])
+        url = Google::UrlShortener::Url.new(long_url: info['issue']['html_url'])
 
         bot.channels.each{|c| c.send("[ISSUE][##{info['issue']['number']}] #{user} closed issue: \"#{title}\" URL: #{url.shorten!}")}
       end
       if info['action'] == 'reopened'
         user = info['sender']['login']
         title = info['issue']['title']
-        url = Google::UrlShortener::Url.new(:long_url => info['issue']['html_url'])
+        url = Google::UrlShortener::Url.new(long_url: info['issue']['html_url'])
 
         bot.channels.each{|c| c.send("[ISSUE][##{info['issue']['number']}] #{user} reopened an issue: \"#{title}\" URL: #{url.shorten!}")}
       end
