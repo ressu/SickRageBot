@@ -45,6 +45,10 @@ module SickRageBot
         self.class.to_s.split('::')[-1].upcase
       end
 
+      def url
+        Google::UrlShortener::Url.new(long_url: link).shorten!
+      end
+
       def valid?
         !invalid?
       end
@@ -64,7 +68,7 @@ module SickRageBot
 
       # FIXME: Needs rewriting
       def nexta
-        if source.downcase == 'tvrage'
+        if source == 'TVRAGE'
           s = { :aired => 'Season > episode > airdate',
                 :day => 'airday',
                 :time => 'airtime' }
@@ -94,13 +98,6 @@ module SickRageBot
     end
 
     class TheTvdb < TvBase
-      def url
-        Google::UrlShortener::Url.new(
-          long_url: 'http://thetvdb.com/?tab=series&'\
-          "id=#{show_id}"
-        ).shorten!
-      end
-
       def id_element
         search.css('seriesid').first
       end
@@ -125,13 +122,13 @@ module SickRageBot
       def ended?
         tvstatus == 'Canceled/Ended'
       end
+
+      def link
+        "http://thetvdb.com/?tab=series&id=#{show_id}"
+      end
     end
 
     class TvRage < TvBase
-      def url
-        Google::UrlShortener::Url.new(long_url: link).shorten!
-      end
-
       def id_element
         search.css('showid').first
       end
