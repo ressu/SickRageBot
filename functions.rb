@@ -42,44 +42,8 @@ def nexta(xml, source)
   end
 end
 
-
 def tv(n, source)
-  if source == 'tvrage'
-    s = { :id => 'showid',
-          :name => 'name',
-          :status => 'status',
-          :searchurl => 'http://services.tvrage.com/feeds/search.php?show=',
-          :tvurl => 'http://services.tvrage.com/feeds/full_show_info.php?sid=',
-          :link => 'Show > showlink' }
-  else
-    s = { :id => 'seriesid',
-          :name => 'SeriesName',
-          :status => 'Status',
-          :searchurl => 'http://thetvdb.com/api/GetSeries.php?seriesname=',
-          :tvurl => "http://thetvdb.com/api/#{$tvdbapikey}/series/",
-          :tvurl2 => '/all/en.xml' }
-  end
-  search = Nokogiri::XML(open("#{s[:searchurl]}#{CGI.escape(n.message.split(' ', 2)[1])}"))
-  unless search.css(s[:id]).first.nil?
-    show = Nokogiri::XML(open("#{s[:tvurl]}#{search.css(s[:id]).first.text}#{s[:tvurl2]}"))
-    tvname = show.css(s[:name]).text
-    tvstatus = show.css(s[:status]).text
-
-    if s[:link].nil?
-      url = Google::UrlShortener::Url.new(:long_url => "http://thetvdb.com/?tab=series&id=#{search.css(s[:id]).first.text}")
-    else
-      url = Google::UrlShortener::Url.new(:long_url => (show.css(s[:link]).text))
-    end
-
-    if tvstatus == 'Ended' or tvstatus == 'Canceled/Ended'
-      n.reply "#{Format(:bold, "#{source.upcase} - Show:")} #{tvname} :: #{Format(:bold, 'Status:')} #{tvstatus} :: URL: #{url.shorten!}"
-    else
-      n.reply "#{Format(:bold, "#{source.upcase} - Show:")} #{tvname} :: #{Format(:bold, 'Status:')} #{tvstatus} :: #{Format(:bold, 'Next:')} #{nexta(show, source)} :: URL: #{url.shorten!}"
-    end
-  end
-  if search.css(s[:id]).first.nil?
-    n.reply "#{Format(:bold, source.upcase)} - No results found."
-  end
+  SickRageBot::Tv.new(n, source)
 end
 
 def movie(n)
