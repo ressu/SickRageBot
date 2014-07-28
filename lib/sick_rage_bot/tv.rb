@@ -5,20 +5,14 @@ require 'google_url_shortener'
 
 module SickRageBot
   class Tv
-    attr_accessor :feed
-
     def initialize(n, source)
       show_name = n.split(' ', 2)[1]
-      self.feed = if source == 'tvrage'
-                    TvRage.new show_name
-                  else
-                    TheTvdb.new show_name
-                  end
-      if feed.valid?
-        n.reply feed.to_irc_s
-      else
-        n.reply "#{Format(:bold, source.upcase)} - No results found."
-      end
+      show = if source == 'tvrage'
+               TvRage.new show_name
+             else
+               TheTvdb.new show_name
+             end
+      n.reply show.to_irc_s
     end
 
     class TvBase
@@ -52,10 +46,15 @@ module SickRageBot
       end
 
       def valid?
-        !id_element.nil?
+        !invalid?
+      end
+
+      def invalid?
+        id_element.nil?
       end
 
       def to_irc_s
+        return "#{Format(:bold, source)} - No results found." if invalid?
         str = "#{Format(:bold, "#{source} - Show:")} #{tvname} "
         str += ":: #{Format(:bold, 'Status:')} #{tvstatus} "
         str += ":: #{Format(:bold, 'Next:')} #{nexta} " unless ended?
