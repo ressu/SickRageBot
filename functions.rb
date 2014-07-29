@@ -218,8 +218,6 @@ end
 def ut(m, uptime)
   m.reply "Uptime: #{time_diff(Time.now - uptime)}"
 end
-<<<<<<< HEAD
-=======
 
 def latest(b, branch)
   gh = Github::Repos.new.branch('echel0n','SickRage',branch)['commit']['commit']
@@ -230,4 +228,3 @@ def latest(b, branch)
 
   b.reply "The latest commit in #{branch}: #{name}, #{commit}, #{msg}, #{url}"
 end
->>>>>>> origin/master
